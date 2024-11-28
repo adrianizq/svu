@@ -1,11 +1,13 @@
 package co.edu.itp.svu.web.rest;
 
+import co.edu.itp.svu.domain.ArchivoAdjunto;
 import co.edu.itp.svu.repository.ArchivoAdjuntoRepository;
 import co.edu.itp.svu.service.ArchivoAdjuntoService;
 import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -14,8 +16,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
@@ -167,4 +171,80 @@ public class ArchivoAdjuntoResource {
         archivoAdjuntoService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
+
+    ///////////////////////////////////////////////////////////////////////77
+    @PostMapping("/subir")
+    public ResponseEntity<ArchivoAdjunto> subirArchivo(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("nombrePqrs") String nombrePqrs
+    ) {
+        try {
+            ArchivoAdjunto archivoAdjunto = archivoAdjuntoService.save(file, nombrePqrs);
+            return ResponseEntity.status(HttpStatus.CREATED).body(archivoAdjunto);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    ///////////////////////////////////////////////////////////////////////7
+    /**
+     * {@code POST  /archivo-adjunto} : Create a new adjuntoProyectoFase.
+     *
+     * @param archivoAdjuntoDTO the archivoAdjuntDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new adjuntoProyectoFaseDTO, or with status {@code 400 (Bad Request)} if the adjuntoProyectoFase has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    /*
+    @PostMapping("/archivo-adjunto")
+    public ResponseEntity<ArchivoAdjuntoDTO> createAdjuntoProyectoFase(@RequestBody ArchivoAdjuntoDTO archivoAdjuntoDTO) throws URISyntaxException {
+        LOG.debug("REST request to save AdjuntoProyectoFase : {}", archivoAdjuntoDTO);
+        if (archivoAdjuntoDTO.getId() != null) {
+            throw new BadRequestAlertException("A new adjuntoProyectoFase cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        ArchivoAdjuntoDTO result = archivoAdjuntoService.save(archivoAdjuntoDTO);
+
+        //Guarda el adjunto del proyecto
+
+        byte[] file = archivoAdjuntoDTO.getArchivo();
+        if (file != null) {
+            archivoAdjuntoService.attachFile(result, file, archivoAdjuntoDTO.getContentType());
+        }
+
+        return ResponseEntity.created(new URI("/api/adjunto-proyecto-fases/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+*/
+    /**
+     * {@code PUT  /archivo-adjunto} : Updates an existing adjuntoProyectoFase.
+     *
+     * @param adjuntoDTO the archivoAdjuntoDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated adjuntoProyectoFaseDTO,
+     * or with status {@code 400 (Bad Request)} if the archivoAdjuntoDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the adjuntoProyectoFaseDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    /*
+    @PutMapping("/adjunto-proyecto-fases")
+    public ResponseEntity<ArchivoAdjuntoDTO> updateAdjuntoProyectoFase(@RequestBody ArchivoAdjuntoDTO adjuntoDTO) throws URISyntaxException {
+        LOG.debug("REST request to update ArchivoAdjunto : {}", adjuntoDTO);
+        if (adjuntoDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        ArchivoAdjuntoDTO result = archivoAdjuntoService.save(adjuntoDTO);
+
+        //Guarda el adjunto del proyecto
+
+        byte[] file = adjuntoDTO.getArchivo();
+        if (file != null) {
+            archivoAdjuntoService.attachFile(result, file, adjuntoDTO.getContentType());
+        }
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, adjuntoDTO.getId().toString()))
+            .body(result);
+    }
+
+     */
+
 }
