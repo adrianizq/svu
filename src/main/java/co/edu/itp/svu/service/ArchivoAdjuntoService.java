@@ -7,6 +7,7 @@ import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.service.mapper.ArchivoAdjuntoMapper;
 import co.edu.itp.svu.service.util.FileUtils;
 import co.edu.itp.svu.service.util.MimeTypes;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -161,67 +163,62 @@ public class ArchivoAdjuntoService {
         // Guardar en la base de datos
         return archivoAdjuntoRepository.save(archivoAdjunto);
     }
-    /*
-    public void attachFile(ArchivoAdjuntoDTO dto, byte[] file, String contentType) {
-        ArchivoAdjunto entity = archivoAdjuntoMapper.toEntity(dto);
-        //Guarda el archivo en el directorio asignado
-        //File rootDir = new File("/home/jltovarg/test/dudo");
-        try {
-            Path rootDir = Paths.get(appProperties.getUpload().getRoot().getDir());
-            Path filesDir = rootDir.resolve(appProperties.getUpload().getAdjunto().getDir());
-            log.debug("Dir upload: {}, , filesDir: {}, mimetype: {}", rootDir, filesDir, contentType);
-            String ext = MimeTypes.getDefaultExt(contentType);
-            String nameFile = FileUtils.buildFileName(entity.getId(), ext);
 
-            //FileUtils.writeByteArrayToFile(announcementDir.resolve(nameFile), file );
-            Files.write(filesDir.resolve(nameFile), file, StandardOpenOption.CREATE);
+    // Método para descargar el archivo
 
-            entity.setArchivo(nameFile);
-            archivoAdjuntoRepository.save(entity);
-        } catch (Exception e) {
-            log.error("Error attah file", e);
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+    public File downloadFile(String fileName) throws IOException {
+        // Define la ruta base donde se almacenan los archivos
+        Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
+
+        // Resuelve la ruta del archivo completo basado en el nombre del archivo
+        Path filePath = rootLocation.resolve(fileName);
+
+        // Verifica si el archivo existe y es un archivo regular
+        if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
+            return filePath.toFile(); // Devuelve el archivo como un objeto File
+        } else {
+            throw new IOException("El archivo no existe o no es un archivo válido.");
         }
     }
 
- */
-    /**
-     * Carga un archivo del directorio base
-     * @param dto
-     * @return
-     * @throws Exception
-     */
-    /*
-    public Resource loadFileAsResource(ArchivoAdjuntoDTO dto) throws Exception {
+    public void deleteFile(String fileName) throws IOException {
+        // Define la ruta base donde se almacenan los archivos
+        Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
 
-        try {
+        // Resuelve la ruta completa del archivo basado en el nombre del archivo
+        Path filePath = rootLocation.resolve(fileName);
 
-            Path rootDir = Paths.get(appProperties.getUpload().getRoot().getDir());
-            Path filesDir = rootDir.resolve(appProperties.getUpload().getAdjunto().getDir());
-            log.debug("Dir upload: {}, , filesDir: {}, file: {}", rootDir, filesDir, dto.getFile());
-
-            Path filePath = filesDir.resolve(dto.getFile()).normalize();
-
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if(resource.exists()) {
-
-                return resource;
-
-            } else {
-
-                throw new FileNotFoundException("File not found " + dto.getFile());
-
+        // Verifica si el archivo existe
+        if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
+            Files.delete(filePath); // Borra el archivo
+            System.out.println("Archivo eliminado: " + filePath);
+        } else {
+            throw new IOException("El archivo no existe o no es un archivo válido.");
+        }
+    }
+    //*** Listar Archivos
+    /*public List<String> listFiles() throws IOException {
+        List<String> fileNames = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(rootLocation)) {
+            for (Path path : stream) {
+                if (Files.isRegularFile(path)) {
+                    fileNames.add(path.getFileName().toString());
+                }
             }
-
-        } catch (MalformedURLException ex) {
-
-            throw new FileNotFoundException("File not found " + dto.getFile());
-
         }
+        return fileNames;
+    }*/
 
+    //****** Renombrar archivo
+    /*
+    public void renameFile(String oldName, String newName) throws IOException {
+        Path oldPath = rootLocation.resolve(oldName);
+        Path newPath = rootLocation.resolve(newName);
+        if (Files.exists(oldPath) && !Files.exists(newPath)) {
+            Files.move(oldPath, newPath);
+        } else {
+            throw new IOException("El archivo no existe o el nuevo nombre ya está en uso.");
+        }
     }
-
- */
-
+*/
 }

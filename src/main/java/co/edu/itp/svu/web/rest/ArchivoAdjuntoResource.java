@@ -7,16 +7,22 @@ import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -185,66 +191,57 @@ public class ArchivoAdjuntoResource {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
     ///////////////////////////////////////////////////////////////////////7
-    /**
-     * {@code POST  /archivo-adjunto} : Create a new adjuntoProyectoFase.
-     *
-     * @param archivoAdjuntoDTO the archivoAdjuntDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new adjuntoProyectoFaseDTO, or with status {@code 400 (Bad Request)} if the adjuntoProyectoFase has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    /*
-    @PostMapping("/archivo-adjunto")
-    public ResponseEntity<ArchivoAdjuntoDTO> createAdjuntoProyectoFase(@RequestBody ArchivoAdjuntoDTO archivoAdjuntoDTO) throws URISyntaxException {
-        LOG.debug("REST request to save AdjuntoProyectoFase : {}", archivoAdjuntoDTO);
-        if (archivoAdjuntoDTO.getId() != null) {
-            throw new BadRequestAlertException("A new adjuntoProyectoFase cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        ArchivoAdjuntoDTO result = archivoAdjuntoService.save(archivoAdjuntoDTO);
+    // Endpoint para descargar archivo
+    @GetMapping("/api/archivos/{fileName}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) throws IOException {
+        // Llama al servicio para obtener el archivo
+        File file = archivoAdjuntoService.downloadFile(fileName);
 
-        //Guarda el adjunto del proyecto
+        // Crea un Resource a partir del archivo
+        Path path = file.toPath();
+        Resource resource = new UrlResource(path.toUri());
 
-        byte[] file = archivoAdjuntoDTO.getArchivo();
-        if (file != null) {
-            archivoAdjuntoService.attachFile(result, file, archivoAdjuntoDTO.getContentType());
-        }
-
-        return ResponseEntity.created(new URI("/api/adjunto-proyecto-fases/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
-    }
-
-*/
-    /**
-     * {@code PUT  /archivo-adjunto} : Updates an existing adjuntoProyectoFase.
-     *
-     * @param adjuntoDTO the archivoAdjuntoDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated adjuntoProyectoFaseDTO,
-     * or with status {@code 400 (Bad Request)} if the archivoAdjuntoDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the adjuntoProyectoFaseDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    /*
-    @PutMapping("/adjunto-proyecto-fases")
-    public ResponseEntity<ArchivoAdjuntoDTO> updateAdjuntoProyectoFase(@RequestBody ArchivoAdjuntoDTO adjuntoDTO) throws URISyntaxException {
-        LOG.debug("REST request to update ArchivoAdjunto : {}", adjuntoDTO);
-        if (adjuntoDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        ArchivoAdjuntoDTO result = archivoAdjuntoService.save(adjuntoDTO);
-
-        //Guarda el adjunto del proyecto
-
-        byte[] file = adjuntoDTO.getArchivo();
-        if (file != null) {
-            archivoAdjuntoService.attachFile(result, file, adjuntoDTO.getContentType());
-        }
-
+        // Configura los encabezados para indicar que es una descarga
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, adjuntoDTO.getId().toString()))
-            .body(result);
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(resource);
     }
 
-     */
+    @DeleteMapping("/delete/{fileName}")
+    public ResponseEntity<String> deleteFile(@PathVariable String fileName) {
+        try {
+            archivoAdjuntoService.deleteFile(fileName);
+            return ResponseEntity.ok("Archivo eliminado: " + fileName);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al eliminar archivo: " + e.getMessage());
+        }
+    }
+    ////////////Listar archivos
+    /*
+    @GetMapping("/archivo-adjunto-list")
+    public ResponseEntity<List<String>> listFiles() {
+        try {
+            return ResponseEntity.ok(archivoAdjuntoService.listFiles());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    */
+
+    //****** Renombrar archivo
+    /*
+    @PutMapping("/rename")
+    public ResponseEntity<String> renameFile(@RequestParam String oldName, @RequestParam String newName) {
+        try {
+            archivoAdjuntoService.renameFile(oldName, newName);
+            return ResponseEntity.ok("Archivo renombrado de " + oldName + " a " + newName);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al renombrar archivo: " + e.getMessage());
+        }
+    }
+*/
 
 }
