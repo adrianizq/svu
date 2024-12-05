@@ -135,7 +135,7 @@ public class ArchivoAdjuntoService {
         archivoAdjuntoRepository.deleteById(id);
     }
 
-    public ArchivoAdjunto save(MultipartFile file, String nombrePqrs) throws IOException {
+    public ArchivoAdjunto save(MultipartFile file) throws IOException {
         Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
         if (!Files.exists(rootLocation)) {
             Files.createDirectories(rootLocation); // Crear el directorio si no existe

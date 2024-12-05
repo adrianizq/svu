@@ -149,6 +149,9 @@ server:
     session:
       cookie:
         http-only: true
+    multipart:
+      max-file-size: 50MB # Tamaño máximo permitido para un solo archivo
+      max-request-size: 50MB # Tamaño máximo permitido para toda la solicitud
 
 springdoc:
   show-actuator: true

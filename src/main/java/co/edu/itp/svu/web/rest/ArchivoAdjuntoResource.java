@@ -180,12 +180,9 @@ public class ArchivoAdjuntoResource {
 
     ///////////////////////////////////////////////////////////////////////77
     @PostMapping("/subir")
-    public ResponseEntity<ArchivoAdjunto> subirArchivo(
-        @RequestParam("file") MultipartFile file,
-        @RequestParam("nombrePqrs") String nombrePqrs
-    ) {
+    public ResponseEntity<ArchivoAdjunto> subirArchivo(@RequestParam("file") MultipartFile file) {
         try {
-            ArchivoAdjunto archivoAdjunto = archivoAdjuntoService.save(file, nombrePqrs);
+            ArchivoAdjunto archivoAdjunto = archivoAdjuntoService.save(file);
             return ResponseEntity.status(HttpStatus.CREATED).body(archivoAdjunto);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
