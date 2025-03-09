@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -54,7 +55,7 @@ public class PqrsResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new pqrsDTO, or with status {@code 400 (Bad Request)} if the pqrs has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
+    /*   @PostMapping("")
     public ResponseEntity<PqrsDTO> createPqrs(@Valid @RequestBody PqrsDTO pqrsDTO) throws URISyntaxException {
         LOG.debug("REST request to save Pqrs : {}", pqrsDTO);
         if (pqrsDTO.getId() != null) {
@@ -64,7 +65,7 @@ public class PqrsResource {
         return ResponseEntity.created(new URI("/api/pqrs/" + pqrsDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, pqrsDTO.getId()))
             .body(pqrsDTO);
-    }
+    }*/
 
     /**
      * {@code PUT  /pqrs/:id} : Updates an existing pqrs.
@@ -172,5 +173,17 @@ public class PqrsResource {
         LOG.debug("REST request to delete Pqrs : {}", id);
         pqrsService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
+    }
+
+    //Modificaciones desde aqui
+    //ya existe createPqrs pero esa la voy a dejar para mas adelante para users anomimos
+    @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<PqrsDTO> registrarPqr(@RequestBody PqrsDTO pqrDTO) throws URISyntaxException {
+        LOG.debug("Solicitud para crear una PQR por ADMIN: {}", pqrDTO);
+        PqrsDTO nuevaPqr = pqrsService.save(pqrDTO);
+        return ResponseEntity.created(new URI("/api/pqrs/" + nuevaPqr.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, nuevaPqr.getId()))
+            .body(nuevaPqr);
     }
 }

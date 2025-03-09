@@ -1,5 +1,6 @@
 import { defineComponent, ref } from 'vue';
 import ArchivoAdjuntoService from './archivo-adjunto.service';
+
 export default defineComponent({
   name: 'ArchivoAdjuntoComponent',
   setup() {
@@ -30,6 +31,17 @@ export default defineComponent({
         successMessage.value = null;
         errorMessage.value = 'Error al subir el archivo.';
         console.error('Error subiendo archivo:', error);
+      }
+    };
+
+    const eliminarArchivo = async () => {
+      if (this.archivo && confirm('¿Está seguro de eliminar este archivo?')) {
+        try {
+          await this.archivoService.deleteArchivo(this.archivo.id);
+          this.archivo = null; // Elimina el archivo del estado
+        } catch (error) {
+          console.error('Error eliminando el archivo:', error);
+        }
       }
     };
 

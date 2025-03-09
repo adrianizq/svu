@@ -9,6 +9,7 @@ import co.edu.itp.svu.service.dto.PqrsDTO;
 import co.edu.itp.svu.service.mapper.ArchivoAdjuntoMapper;
 import co.edu.itp.svu.service.mapper.OficinaMapper;
 import co.edu.itp.svu.service.mapper.PqrsMapper;
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,8 @@ public class PqrsService {
     public PqrsDTO save(PqrsDTO pqrsDTO) {
         LOG.debug("Request to save Pqrs : {}", pqrsDTO);
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
+        pqrs.setFechaCreacion(Instant.now());
+        pqrs.setEstado("PENDIENTE"); // Estado por defecto
         pqrs = pqrsRepository.save(pqrs);
         return pqrsMapper.toDto(pqrs);
     }
@@ -65,6 +68,7 @@ public class PqrsService {
     public PqrsDTO update(PqrsDTO pqrsDTO) {
         LOG.debug("Request to update Pqrs : {}", pqrsDTO);
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
+        pqrs.setEstado(pqrs.getEstado());
         pqrs = pqrsRepository.save(pqrs);
         return pqrsMapper.toDto(pqrs);
     }

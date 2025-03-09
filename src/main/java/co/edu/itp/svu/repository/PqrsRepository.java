@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PqrsRepository extends MongoRepository<Pqrs, String> {
     List<Pqrs> findByOficinaResponder_Id(String oficinaId); // Método para encontrar PQRS por oficinaId
+    List<Pqrs> findByEstado(String estado);
 }

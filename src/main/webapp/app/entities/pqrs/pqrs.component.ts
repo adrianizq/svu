@@ -1,4 +1,4 @@
-import { type Ref, defineComponent, inject, onMounted, ref, watch } from 'vue';
+import { type Ref, type ComputedRef, defineComponent, inject, onMounted, ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PqrsService from './pqrs.service';
@@ -6,6 +6,8 @@ import { type IPqrs } from '@/shared/model/pqrs.model';
 import useDataUtils from '@/shared/data/data-utils.service';
 import { useDateFormat } from '@/shared/composables';
 import { useAlertService } from '@/shared/alert/alert.service';
+import { useAccountStore } from '@/shared/config/store/account-store';
+import type LoginService from '@/account/login.service';
 
 export default defineComponent({
   compatConfig: { MODE: 3 },
@@ -17,6 +19,12 @@ export default defineComponent({
     const pqrsService = inject('pqrsService', () => new PqrsService());
     const alertService = inject('alertService', () => useAlertService(), true);
 
+    const store = useAccountStore();
+    const loginService = inject<LoginService>('loginService');
+    const authenticated = inject<ComputedRef<boolean>>('authenticated');
+    const username = inject<ComputedRef<string>>('currentUsername');
+
+    const esAdmin = ref(false);
     const itemsPerPage = ref(20);
     const queryCount: Ref<number> = ref(null);
     const page: Ref<number> = ref(1);
@@ -65,6 +73,19 @@ export default defineComponent({
 
     onMounted(async () => {
       await retrievePqrss();
+
+      if (authenticated?.value) {
+        const userRole = loginService?.getUserRole();
+        console.log('🔍 Usuario autenticado con rol (onMounted):', userRole);
+        //esAdmin.value = userRole === 'ROLE_ADMIN';
+        if (userRole === 'ROLE_ADMIN') {
+          esAdmin.value = true; // ✅ Corrección aquí
+          console.log('✅ esAdmin cambiado a TRUE');
+        } else {
+          esAdmin.value = false; // ✅ Corrección aquí
+          console.log('❌ esAdmin cambiado a FALSE');
+        }
+      }
     });
 
     const removeId: Ref<string> = ref(null);
@@ -134,6 +155,9 @@ export default defineComponent({
       totalItems,
       changeOrder,
       t$,
+      authenticated, //** */
+      username,
+      esAdmin, // ** /
       ...dataUtils,
     };
   },

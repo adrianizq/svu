@@ -86,44 +86,6 @@ export default class ArchivoAdjuntoService {
     });
   }
 
-  // Maneja el cambio de archivo
-  /* private onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.archivo = input.files[0];
-    }
-  }*/
-
-  // Método para subir un archivo con el parámetro nombrePqrs
-
-  /* public async createWithFile(): Promise<any> {
-   //const formData = new FormData();
-   //formData.append('archivo', archivo); // Aquí agregas el archivo
-
-    //formData.append('nombre', nombre);
-    //   formData.append('tipo', tipo);
-   //     formData.append('fechaSubida', fechaSubida);
-        //formData.append('pqrs', JSON.stringify(this.archivoAdjunto.pqrs));
-     // Aquí agregas el parámetro nombrePqrs
-
-      //
-      try {
-        // Realizamos la solicitud POST para subir el archivo
-        const response = await axios.post('/api/subir-archivo', {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        return response.data; // Devuelve los datos del archivo subido (como el ID, URL, etc.)
-      } catch (error) {
-        console.error('Error al subir el archivo:', error);
-        throw new Error('Hubo un error al subir el archivo.');
-      }
-    
-  
-  }
-*/
-
   public async uploadFile(file: File): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -133,5 +95,9 @@ export default class ArchivoAdjuntoService {
         'Content-Type': 'multipart/form-data',
       },
     });
+  }
+
+  public async deleteArchivo(nombre: string): Promise<void> {
+    return axios.delete(`${baseApiUrl}/${nombre}`);
   }
 }

@@ -16,6 +16,7 @@ export default defineComponent({
     const openLogin = () => {
       loginService.openLogin();
     };
+    console.log('authenticated:', authenticated);
 
     // Verificar y redirigir cuando el estado de autenticación cambie
     watch(authenticated, newValue => {

@@ -8,7 +8,14 @@
           <span v-text="t$('ventanillaUnicaApp.pqrs.home.refreshListLabel')"></span>
         </button>
         <router-link :to="{ name: 'PqrsCreate' }" custom v-slot="{ navigate }">
-          <button @click="navigate" id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary jh-create-entity create-pqrs">
+          <!--<button @click="navigate" id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary jh-create-entity create-pqrs"> -->
+          <button
+            v-if="esAdmin"
+            @click="navigate"
+            id="jh-create-entity"
+            data-cy="entityCreateButton"
+            class="btn btn-primary jh-create-entity create-pqrs"
+          >
             <font-awesome-icon icon="plus"></font-awesome-icon>
             <span v-text="t$('ventanillaUnicaApp.pqrs.home.createLabel')"></span>
           </button>

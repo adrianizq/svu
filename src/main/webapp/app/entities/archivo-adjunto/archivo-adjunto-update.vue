@@ -1,5 +1,17 @@
 <template>
   <div class="form-group">
+    <div v-if="archivo">
+      <!-- Visualización del archivo -->
+      <a :href="archivo.url" target="_blank">
+        {{ archivo.nombre }}
+      </a>
+
+      <!-- Botón para eliminar -->
+      <button class="btn btn-danger btn-sm" @click="eliminarArchivo">Eliminar</button>
+    </div>
+  </div>
+
+  <div class="form-group">
     <label for="archivo-adjunto-urlArchivo">
       {{ t$('ventanillaUnicaApp.archivoAdjunto.urlArchivo') }}
     </label>
