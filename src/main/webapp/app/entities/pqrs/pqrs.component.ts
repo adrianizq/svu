@@ -79,11 +79,11 @@ export default defineComponent({
         console.log('🔍 Usuario autenticado con rol (onMounted):', userRole);
         //esAdmin.value = userRole === 'ROLE_ADMIN';
         if (userRole === 'ROLE_ADMIN') {
-          esAdmin.value = true; // ✅ Corrección aquí
-          console.log('✅ esAdmin cambiado a TRUE');
+          esAdmin.value = true; //  Corrección aquí
+          console.log(' esAdmin cambiado a TRUE');
         } else {
-          esAdmin.value = false; // ✅ Corrección aquí
-          console.log('❌ esAdmin cambiado a FALSE');
+          esAdmin.value = false; //  Corrección aquí
+          console.log(' esAdmin cambiado a FALSE');
         }
       }
     });

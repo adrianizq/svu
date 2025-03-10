@@ -1,9 +1,11 @@
-import { type Ref, defineComponent, inject, onMounted, ref } from 'vue';
+import { type Ref, type ComputedRef, defineComponent, inject, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import OficinaService from './oficina.service';
 import { type IOficina } from '@/shared/model/oficina.model';
 import { useAlertService } from '@/shared/alert/alert.service';
+import { useAccountStore } from '@/shared/config/store/account-store';
+import type LoginService from '@/account/login.service';
 
 export default defineComponent({
   compatConfig: { MODE: 3 },
@@ -16,6 +18,12 @@ export default defineComponent({
     const oficinas: Ref<IOficina[]> = ref([]);
 
     const isFetching = ref(false);
+
+    const loginService = inject<LoginService>('loginService');
+    const authenticated = inject<ComputedRef<boolean>>('authenticated');
+    const username = inject<ComputedRef<string>>('currentUsername');
+
+    const esAdmin = ref(false);
 
     const clear = () => {};
 
@@ -37,6 +45,19 @@ export default defineComponent({
 
     onMounted(async () => {
       await retrieveOficinas();
+
+      if (authenticated?.value) {
+        const userRole = loginService?.getUserRole();
+        console.log('🔍 Usuario autenticado con rol (onMounted):', userRole);
+        //esAdmin.value = userRole === 'ROLE_ADMIN';
+        if (userRole === 'ROLE_ADMIN') {
+          esAdmin.value = true; //  Corrección aquí
+          console.log(' esAdmin cambiado a TRUE');
+        } else {
+          esAdmin.value = false; // ✅ Corrección aquí
+          console.log(' esAdmin cambiado a FALSE');
+        }
+      }
     });
 
     const removeId: Ref<string> = ref(null);
@@ -73,6 +94,9 @@ export default defineComponent({
       closeDialog,
       removeOficina,
       t$,
+      authenticated, //** */
+      username,
+      esAdmin, // ** /
     };
   },
 });
