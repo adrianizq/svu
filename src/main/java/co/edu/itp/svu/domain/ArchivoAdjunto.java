@@ -38,12 +38,12 @@ public class ArchivoAdjunto implements Serializable {
 
     @DBRef
     @Field("pqrs")
-    @JsonIgnoreProperties(value = { "archivosAdjuntos", "oficinaResponder" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "archivosAdjuntos" }, allowSetters = true)
     private Pqrs pqrs;
 
     @DBRef
     @Field("respuesta")
-    @JsonIgnoreProperties(value = { "archivosAdjuntos", "pqr" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "archivosAdjuntos" }, allowSetters = true)
     private Respuesta respuesta;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

@@ -43,7 +43,7 @@ public class Pqrs implements Serializable {
 
     @DBRef
     @Field("archivosAdjuntos")
-    @JsonIgnoreProperties(value = { "pqrs", "respuesta" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "pqrs" }, allowSetters = true)
     private Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>();
 
     @DBRef

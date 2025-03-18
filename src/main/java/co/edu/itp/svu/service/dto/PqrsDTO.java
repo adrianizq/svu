@@ -1,9 +1,14 @@
 package co.edu.itp.svu.service.dto;
 
+import co.edu.itp.svu.domain.ArchivoAdjunto;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * A DTO for the {@link co.edu.itp.svu.domain.Pqrs} entity.
@@ -27,6 +32,16 @@ public class PqrsDTO implements Serializable {
     private String estado;
 
     private OficinaDTO oficinaResponder;
+
+    private Set<ArchivoAdjuntoDTO> archivosAdjuntosDTO;
+
+    public Set<ArchivoAdjuntoDTO> getArchivosAdjuntosDTO() {
+        return archivosAdjuntosDTO;
+    }
+
+    public void setArchivosAdjuntosDTO(Set<ArchivoAdjuntoDTO> archivosAdjuntos) {
+        this.archivosAdjuntosDTO = archivosAdjuntos;
+    }
 
     public String getId() {
         return id;

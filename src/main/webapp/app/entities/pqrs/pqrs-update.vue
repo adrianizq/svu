@@ -117,6 +117,35 @@
           </div>
         </div>
         <div>
+          <!-- Subida de Archivos 
+ <b-form-group label="Archivos Adjuntos">
+        <b-form-file multiple @change="onFileChange"></b-form-file>
+        <ul v-if="archivosAdjuntos.length">
+          <li v-for="(file, index) in archivosAdjuntos" :key="index">
+            {{ file.name }}
+          </li>
+        </ul>
+      </b-form-group> -->
+          <div>
+            <h2>Subir Archivo para PQRS</h2>
+
+            <form @submit.prevent="uploadFile">
+              <!-- ✅ Campo para subir archivo -->
+              <div>
+                <label for="archivo">Adjuntar Archivo:</label>
+                <input id="archivo" type="file" @change="onFileChange" required />
+              </div>
+
+              <!-- ✅ Vista previa del archivo seleccionado -->
+              <p v-if="archivo">{{ archivo.name }} ({{ (archivo.size / 1024).toFixed(2) }} KB)</p>
+
+              <!-- ✅ Botón para subir -->
+              <button type="submit" :disabled="isUploading">Subir Archivo</button>
+            </form>
+
+            <button @click="previousState">Cancelar</button>
+          </div>
+
           <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" @click="previousState()">
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.cancel')"></span>
           </button>

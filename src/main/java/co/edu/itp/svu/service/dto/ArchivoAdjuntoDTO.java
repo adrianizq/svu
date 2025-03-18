@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A DTO for the {@link co.edu.itp.svu.domain.ArchivoAdjunto} entity.
@@ -99,6 +101,12 @@ public class ArchivoAdjuntoDTO implements Serializable {
         }
         return Objects.equals(this.id, archivoAdjuntoDTO.id);
     }
+
+    /*Set<ArchivoAdjuntoDTO> archivosAdjuntos = pqrs.getArchivosAdjuntos().stream()
+        .map(archivo -> new ArchivoAdjuntoDTO(archivo.getId(), archivo.getNombre(), archivo.getUrlArchivo()))
+        .collect(Collectors.toSet());
+
+resultDTO.setArchivosAdjuntos(archivosAdjuntos);*/
 
     @Override
     public int hashCode() {
