@@ -7,8 +7,6 @@ export interface IArchivoAdjunto {
   tipo?: string;
   urlArchivo?: string | null;
   fechaSubida?: Date;
-  pqrs?: IPqrs | null;
-  respuesta?: IRespuesta | null;
 }
 
 export class ArchivoAdjunto implements IArchivoAdjunto {
@@ -18,7 +16,5 @@ export class ArchivoAdjunto implements IArchivoAdjunto {
     public tipo?: string,
     public urlArchivo?: string | null,
     public fechaSubida?: Date,
-    public pqrs?: IPqrs | null,
-    public respuesta?: IRespuesta | null,
   ) {}
 }

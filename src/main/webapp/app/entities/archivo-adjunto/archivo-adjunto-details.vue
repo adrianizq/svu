@@ -30,24 +30,6 @@
           <dd>
             <span v-if="archivoAdjunto.fechaSubida">{{ formatDateLong(archivoAdjunto.fechaSubida) }}</span>
           </dd>
-          <dt>
-            <span v-text="t$('ventanillaUnicaApp.archivoAdjunto.pqrs')"></span>
-          </dt>
-          <dd>
-            <div v-if="archivoAdjunto.pqrs">
-              <router-link :to="{ name: 'PqrsView', params: { pqrsId: archivoAdjunto.pqrs.id } }">{{ archivoAdjunto.pqrs.id }}</router-link>
-            </div>
-          </dd>
-          <dt>
-            <span v-text="t$('ventanillaUnicaApp.archivoAdjunto.respuesta')"></span>
-          </dt>
-          <dd>
-            <div v-if="archivoAdjunto.respuesta">
-              <router-link :to="{ name: 'RespuestaView', params: { respuestaId: archivoAdjunto.respuesta.id } }">{{
-                archivoAdjunto.respuesta.id
-              }}</router-link>
-            </div>
-          </dd>
         </dl>
         <button type="submit" @click.prevent="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
           <font-awesome-icon icon="arrow-left"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.back')"></span>

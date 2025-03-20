@@ -33,8 +33,6 @@
             <th scope="row"><span v-text="t$('ventanillaUnicaApp.archivoAdjunto.tipo')"></span></th>
             <th scope="row"><span v-text="t$('ventanillaUnicaApp.archivoAdjunto.urlArchivo')"></span></th>
             <th scope="row"><span v-text="t$('ventanillaUnicaApp.archivoAdjunto.fechaSubida')"></span></th>
-            <th scope="row"><span v-text="t$('ventanillaUnicaApp.archivoAdjunto.pqrs')"></span></th>
-            <th scope="row"><span v-text="t$('ventanillaUnicaApp.archivoAdjunto.respuesta')"></span></th>
             <th scope="row"></th>
           </tr>
         </thead>
@@ -49,20 +47,7 @@
             <td>{{ archivoAdjunto.tipo }}</td>
             <td>{{ archivoAdjunto.urlArchivo }}</td>
             <td>{{ formatDateShort(archivoAdjunto.fechaSubida) || '' }}</td>
-            <td>
-              <div v-if="archivoAdjunto.pqrs">
-                <router-link :to="{ name: 'PqrsView', params: { pqrsId: archivoAdjunto.pqrs.id } }">{{
-                  archivoAdjunto.pqrs.id
-                }}</router-link>
-              </div>
-            </td>
-            <td>
-              <div v-if="archivoAdjunto.respuesta">
-                <router-link :to="{ name: 'RespuestaView', params: { respuestaId: archivoAdjunto.respuesta.id } }">{{
-                  archivoAdjunto.respuesta.id
-                }}</router-link>
-              </div>
-            </td>
+
             <td class="text-right">
               <div class="btn-group">
                 <router-link
