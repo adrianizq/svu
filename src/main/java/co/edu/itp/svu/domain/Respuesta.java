@@ -103,12 +103,6 @@ public class Respuesta implements Serializable {
     }
 
     public void setArchivosAdjuntos(Set<ArchivoAdjunto> archivoAdjuntos) {
-        if (this.archivosAdjuntos != null) {
-            this.archivosAdjuntos.forEach(i -> i.setRespuesta(null));
-        }
-        if (archivoAdjuntos != null) {
-            archivoAdjuntos.forEach(i -> i.setRespuesta(this));
-        }
         this.archivosAdjuntos = archivoAdjuntos;
     }
 
@@ -119,13 +113,13 @@ public class Respuesta implements Serializable {
 
     public Respuesta addArchivosAdjuntos(ArchivoAdjunto archivoAdjunto) {
         this.archivosAdjuntos.add(archivoAdjunto);
-        archivoAdjunto.setRespuesta(this);
+        //archivoAdjunto.setRespuesta(this);
         return this;
     }
 
     public Respuesta removeArchivosAdjuntos(ArchivoAdjunto archivoAdjunto) {
         this.archivosAdjuntos.remove(archivoAdjunto);
-        archivoAdjunto.setRespuesta(null);
+        //archivoAdjunto.setRespuesta(null);
         return this;
     }
 

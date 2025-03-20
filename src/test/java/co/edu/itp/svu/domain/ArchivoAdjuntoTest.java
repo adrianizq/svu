@@ -23,28 +23,4 @@ class ArchivoAdjuntoTest {
         archivoAdjunto2 = getArchivoAdjuntoSample2();
         assertThat(archivoAdjunto1).isNotEqualTo(archivoAdjunto2);
     }
-
-    @Test
-    void pqrsTest() {
-        ArchivoAdjunto archivoAdjunto = getArchivoAdjuntoRandomSampleGenerator();
-        Pqrs pqrsBack = getPqrsRandomSampleGenerator();
-
-        archivoAdjunto.setPqrs(pqrsBack);
-        assertThat(archivoAdjunto.getPqrs()).isEqualTo(pqrsBack);
-
-        archivoAdjunto.pqrs(null);
-        assertThat(archivoAdjunto.getPqrs()).isNull();
-    }
-
-    @Test
-    void respuestaTest() {
-        ArchivoAdjunto archivoAdjunto = getArchivoAdjuntoRandomSampleGenerator();
-        Respuesta respuestaBack = getRespuestaRandomSampleGenerator();
-
-        archivoAdjunto.setRespuesta(respuestaBack);
-        assertThat(archivoAdjunto.getRespuesta()).isEqualTo(respuestaBack);
-
-        archivoAdjunto.respuesta(null);
-        assertThat(archivoAdjunto.getRespuesta()).isNull();
-    }
 }

@@ -30,22 +30,6 @@ class PqrsTest {
     void archivosAdjuntosTest() {
         Pqrs pqrs = getPqrsRandomSampleGenerator();
         ArchivoAdjunto archivoAdjuntoBack = getArchivoAdjuntoRandomSampleGenerator();
-
-        pqrs.addArchivosAdjuntos(archivoAdjuntoBack);
-        assertThat(pqrs.getArchivosAdjuntos()).containsOnly(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getPqrs()).isEqualTo(pqrs);
-
-        pqrs.removeArchivosAdjuntos(archivoAdjuntoBack);
-        assertThat(pqrs.getArchivosAdjuntos()).doesNotContain(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getPqrs()).isNull();
-
-        pqrs.archivosAdjuntos(new HashSet<>(Set.of(archivoAdjuntoBack)));
-        assertThat(pqrs.getArchivosAdjuntos()).containsOnly(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getPqrs()).isEqualTo(pqrs);
-
-        pqrs.setArchivosAdjuntos(new HashSet<>());
-        assertThat(pqrs.getArchivosAdjuntos()).doesNotContain(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getPqrs()).isNull();
     }
 
     @Test

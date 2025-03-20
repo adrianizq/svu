@@ -10,17 +10,9 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface ArchivoAdjuntoMapper extends EntityMapper<ArchivoAdjuntoDTO, ArchivoAdjunto> {
-    @Mapping(target = "pqrs", source = "pqrs", qualifiedByName = "pqrsId")
-    @Mapping(target = "respuesta", source = "respuesta", qualifiedByName = "respuestaId")
+    // Mapeo básico de ArchivoAdjunto a ArchivoAdjuntoDTO
     ArchivoAdjuntoDTO toDto(ArchivoAdjunto s);
 
-    @Named("pqrsId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    PqrsDTO toDtoPqrsId(Pqrs pqrs);
-
-    @Named("respuestaId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    RespuestaDTO toDtoRespuestaId(Respuesta respuesta);
+    // Mapeo básico de ArchivoAdjuntoDTO a ArchivoAdjunto
+    ArchivoAdjunto toEntity(ArchivoAdjuntoDTO dto);
 }

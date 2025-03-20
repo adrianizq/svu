@@ -186,45 +186,6 @@ public class PqrsService {
             });
     }
 
-    ///////////////////////////////////////////////////777777777
-    //Modificiaciones
-    /*  public PqrsDTO save(PqrsDTO pqrsDTO, List<ArchivoAdjuntoDTO> archivosAdjuntos) {
-        //Pqrs pqrs = new Pqrs();
-        //pqrs.setFechaLimiteRespuesta(pqrsDTO.getFechaLimiteRespuesta());
-        //pqrs.setEstado(pqrsDTO.getEstado());
-        //pqrs.setOficinaResponder(new Oficina(pqrsDTO.getOficinaResponderId()));
-
-        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        pqrs.setFechaCreacion(Instant.now());
-        pqrs.setEstado("PENDIENTE"); // Estado por defecto
-        // Guardamos la PQRS primero
-        //pqrs = pqrsRepository.save(pqrs);
-
-        // Guardamos los archivos y los vinculamos a la PQRS
-        Set<ArchivoAdjunto> archivos = archivosAdjuntos.stream().map(dto -> {
-            ArchivoAdjunto archivo = new ArchivoAdjunto();
-            archivo.setNombre(dto.getNombre());
-            archivo.setTipo(dto.getTipo());
-            archivo.setUrlArchivo(dto.getUrlArchivo());
-            archivo.setFechaSubida(Instant.now());
-            archivo.setPqrs(pqrs);
-           return archivoAdjuntoRepository.save(archivo);
-        }).collect(Collectors.toSet());
-
-        // Asignamos los archivos guardados a la PQRS
-        pqrs.setArchivosAdjuntos(archivos);
-        pqrsRepository.save(pqrs);
-
-        PqrsDTO resultDTO = new PqrsDTO();
-        resultDTO.setId(pqrs.getId());
-        resultDTO.setFechaLimiteRespuesta(pqrs.getFechaLimiteRespuesta());
-        resultDTO.setEstado(pqrs.getEstado());
-        //resultDTO.setOficinaResponderId(pqrs.getOficinaResponder().getId());
-         resultDTO.setArchivosAdjuntos(archivosAdjuntos);
-
-        return resultDTO;
-    }*/
-
     public PqrsDTO save(PqrsDTO pqrsDTO, List<ArchivoAdjuntoDTO> archivosAdjuntos) {
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         pqrs.setFechaCreacion(Instant.now());
@@ -243,7 +204,6 @@ public class PqrsService {
                 archivo.setTipo(dto.getTipo());
                 archivo.setUrlArchivo(dto.getUrlArchivo());
                 archivo.setFechaSubida(Instant.now());
-                archivo.setPqrs(finalPqrs); // Asociamos la PQRS a cada archivo adjunto
                 return archivo;
             })
             .collect(Collectors.toSet());

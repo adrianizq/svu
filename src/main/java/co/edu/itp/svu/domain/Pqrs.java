@@ -136,12 +136,6 @@ public class Pqrs implements Serializable {
     }
 
     public void setArchivosAdjuntos(Set<ArchivoAdjunto> archivoAdjuntos) {
-        if (this.archivosAdjuntos != null) {
-            this.archivosAdjuntos.forEach(i -> i.setPqrs(null));
-        }
-        if (archivoAdjuntos != null) {
-            archivoAdjuntos.forEach(i -> i.setPqrs(this));
-        }
         this.archivosAdjuntos = archivoAdjuntos;
     }
 
@@ -152,13 +146,13 @@ public class Pqrs implements Serializable {
 
     public Pqrs addArchivosAdjuntos(ArchivoAdjunto archivoAdjunto) {
         this.archivosAdjuntos.add(archivoAdjunto);
-        archivoAdjunto.setPqrs(this);
+        //archivoAdjunto.setPqrs(this);
         return this;
     }
 
     public Pqrs removeArchivosAdjuntos(ArchivoAdjunto archivoAdjunto) {
         this.archivosAdjuntos.remove(archivoAdjunto);
-        archivoAdjunto.setPqrs(null);
+        //archivoAdjunto.setPqrs(null);
         return this;
     }
 

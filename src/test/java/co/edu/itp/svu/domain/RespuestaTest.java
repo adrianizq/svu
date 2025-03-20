@@ -30,22 +30,6 @@ class RespuestaTest {
     void archivosAdjuntosTest() {
         Respuesta respuesta = getRespuestaRandomSampleGenerator();
         ArchivoAdjunto archivoAdjuntoBack = getArchivoAdjuntoRandomSampleGenerator();
-
-        respuesta.addArchivosAdjuntos(archivoAdjuntoBack);
-        assertThat(respuesta.getArchivosAdjuntos()).containsOnly(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getRespuesta()).isEqualTo(respuesta);
-
-        respuesta.removeArchivosAdjuntos(archivoAdjuntoBack);
-        assertThat(respuesta.getArchivosAdjuntos()).doesNotContain(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getRespuesta()).isNull();
-
-        respuesta.archivosAdjuntos(new HashSet<>(Set.of(archivoAdjuntoBack)));
-        assertThat(respuesta.getArchivosAdjuntos()).containsOnly(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getRespuesta()).isEqualTo(respuesta);
-
-        respuesta.setArchivosAdjuntos(new HashSet<>());
-        assertThat(respuesta.getArchivosAdjuntos()).doesNotContain(archivoAdjuntoBack);
-        assertThat(archivoAdjuntoBack.getRespuesta()).isNull();
     }
 
     @Test

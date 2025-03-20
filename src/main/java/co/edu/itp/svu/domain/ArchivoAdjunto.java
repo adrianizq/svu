@@ -36,16 +36,6 @@ public class ArchivoAdjunto implements Serializable {
     @Field("fecha_subida")
     private Instant fechaSubida;
 
-    @DBRef
-    @Field("pqrs")
-    @JsonIgnoreProperties(value = { "archivosAdjuntos" }, allowSetters = true)
-    private Pqrs pqrs;
-
-    @DBRef
-    @Field("respuesta")
-    @JsonIgnoreProperties(value = { "archivosAdjuntos" }, allowSetters = true)
-    private Respuesta respuesta;
-
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public String getId() {
@@ -111,32 +101,6 @@ public class ArchivoAdjunto implements Serializable {
 
     public void setFechaSubida(Instant fechaSubida) {
         this.fechaSubida = fechaSubida;
-    }
-
-    public Pqrs getPqrs() {
-        return this.pqrs;
-    }
-
-    public void setPqrs(Pqrs pqrs) {
-        this.pqrs = pqrs;
-    }
-
-    public ArchivoAdjunto pqrs(Pqrs pqrs) {
-        this.setPqrs(pqrs);
-        return this;
-    }
-
-    public Respuesta getRespuesta() {
-        return this.respuesta;
-    }
-
-    public void setRespuesta(Respuesta respuesta) {
-        this.respuesta = respuesta;
-    }
-
-    public ArchivoAdjunto respuesta(Respuesta respuesta) {
-        this.setRespuesta(respuesta);
-        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

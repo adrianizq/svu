@@ -26,10 +26,6 @@ public class ArchivoAdjuntoDTO implements Serializable {
     @NotNull
     private Instant fechaSubida;
 
-    private PqrsDTO pqrs;
-
-    private RespuestaDTO respuesta;
-
     public String getId() {
         return id;
     }
@@ -70,22 +66,6 @@ public class ArchivoAdjuntoDTO implements Serializable {
         this.fechaSubida = fechaSubida;
     }
 
-    public PqrsDTO getPqrs() {
-        return pqrs;
-    }
-
-    public void setPqrs(PqrsDTO pqrs) {
-        this.pqrs = pqrs;
-    }
-
-    public RespuestaDTO getRespuesta() {
-        return respuesta;
-    }
-
-    public void setRespuesta(RespuestaDTO respuesta) {
-        this.respuesta = respuesta;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -102,12 +82,6 @@ public class ArchivoAdjuntoDTO implements Serializable {
         return Objects.equals(this.id, archivoAdjuntoDTO.id);
     }
 
-    /*Set<ArchivoAdjuntoDTO> archivosAdjuntos = pqrs.getArchivosAdjuntos().stream()
-        .map(archivo -> new ArchivoAdjuntoDTO(archivo.getId(), archivo.getNombre(), archivo.getUrlArchivo()))
-        .collect(Collectors.toSet());
-
-resultDTO.setArchivosAdjuntos(archivosAdjuntos);*/
-
     @Override
     public int hashCode() {
         return Objects.hash(this.id);
@@ -122,8 +96,7 @@ resultDTO.setArchivosAdjuntos(archivosAdjuntos);*/
             ", tipo='" + getTipo() + "'" +
             ", urlArchivo='" + getUrlArchivo() + "'" +
             ", fechaSubida='" + getFechaSubida() + "'" +
-            ", pqrs=" + getPqrs() +
-            ", respuesta=" + getRespuesta() +
+
             "}";
     }
 }

@@ -23,7 +23,6 @@ public class ArchivoAdjuntoAsserts {
      */
     public static void assertArchivoAdjuntoAllUpdatablePropertiesEquals(ArchivoAdjunto expected, ArchivoAdjunto actual) {
         assertArchivoAdjuntoUpdatableFieldsEquals(expected, actual);
-        assertArchivoAdjuntoUpdatableRelationshipsEquals(expected, actual);
     }
 
     /**
@@ -51,18 +50,5 @@ public class ArchivoAdjuntoAsserts {
             .satisfies(e -> assertThat(e.getTipo()).as("check tipo").isEqualTo(actual.getTipo()))
             .satisfies(e -> assertThat(e.getUrlArchivo()).as("check urlArchivo").isEqualTo(actual.getUrlArchivo()))
             .satisfies(e -> assertThat(e.getFechaSubida()).as("check fechaSubida").isEqualTo(actual.getFechaSubida()));
-    }
-
-    /**
-     * Asserts that the entity has all the updatable relationships set.
-     *
-     * @param expected the expected entity
-     * @param actual the actual entity
-     */
-    public static void assertArchivoAdjuntoUpdatableRelationshipsEquals(ArchivoAdjunto expected, ArchivoAdjunto actual) {
-        assertThat(expected)
-            .as("Verify ArchivoAdjunto relationships")
-            .satisfies(e -> assertThat(e.getPqrs()).as("check pqrs").isEqualTo(actual.getPqrs()))
-            .satisfies(e -> assertThat(e.getRespuesta()).as("check respuesta").isEqualTo(actual.getRespuesta()));
     }
 }
