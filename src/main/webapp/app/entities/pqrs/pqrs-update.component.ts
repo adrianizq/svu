@@ -140,6 +140,10 @@ import { useAlertService } from '@/shared/alert/alert.service';
 import OficinaService from '@/entities/oficina/oficina.service';
 import { type IOficina } from '@/shared/model/oficina.model';
 import { type IPqrs, Pqrs } from '@/shared/model/pqrs.model';
+
+import ArchivoAdjuntoService from '../archivo-adjunto/archivo-adjunto.service';
+import { type IArchivoAdjunto, ArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
+
 import axios from 'axios'; // ✅ **Nuevo: Importar axios para subir archivos**
 
 export default defineComponent({
@@ -162,11 +166,39 @@ export default defineComponent({
 
     const previousState = () => router.go(-1);
 
+    /*const retrievePqrs = async pqrsId => {
+      try {
+        const res = await pqrsService().find(pqrsId);
+        res.fechaCreacion = new Date(res.fechaCreacion);
+        res.fechaLimiteRespuesta = new Date(res.fechaLimiteRespuesta);
+        pqrs.value = res;
+      } catch (error) {
+        alertService.showHttpError(error.response);
+      }
+    };*/
+    /*const retrievePqrs = async pqrsId => {
+      try {
+        const res = await pqrsService().find(pqrsId);
+        res.fechaCreacion = new Date(res.fechaCreacion);
+        res.fechaLimiteRespuesta = new Date(res.fechaLimiteRespuesta);
+    
+        //  Obtener los archivos adjuntos de la PQRS
+        const archivosResponse = await ArchivoAdjuntoService().retrieveByPqrs(pqrsId);
+        res.archivosAdjuntos = archivosResponse.data;
+    
+        pqrs.value = res;
+      } catch (error) {
+        alertService.showHttpError(error.response);
+      }
+    };*/
+
     const retrievePqrs = async pqrsId => {
       try {
         const res = await pqrsService().find(pqrsId);
         res.fechaCreacion = new Date(res.fechaCreacion);
         res.fechaLimiteRespuesta = new Date(res.fechaLimiteRespuesta);
+
+        // ✅ La lista de archivos adjuntos ya está incluida en la respuesta
         pqrs.value = res;
       } catch (error) {
         alertService.showHttpError(error.response);
@@ -254,7 +286,7 @@ export default defineComponent({
       isSaving,
       currentLanguage,
       oficinas,
-      archivosAdjuntos, // ✅ **Nuevo**
+      //archivosAdjuntos, // ✅ **Nuevo**
       onFileChange, // ✅ **Nuevo**
       ...dataUtils,
       v$,

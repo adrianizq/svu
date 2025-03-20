@@ -1,4 +1,5 @@
 import { type IOficina } from '@/shared/model/oficina.model';
+import { type IArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
 
 export interface IPqrs {
   id?: string;
@@ -8,6 +9,7 @@ export interface IPqrs {
   fechaLimiteRespuesta?: Date | null;
   estado?: string;
   oficinaResponder?: IOficina | null;
+  archivosAdjuntos?: IArchivoAdjunto[]; // Lista de archivos adjuntos
 }
 
 export class Pqrs implements IPqrs {
@@ -19,5 +21,6 @@ export class Pqrs implements IPqrs {
     public fechaLimiteRespuesta?: Date | null,
     public estado?: string,
     public oficinaResponder?: IOficina | null,
+    public archivosAdjuntos?: IArchivoAdjunto[], // Lista de archivos adjuntos
   ) {}
 }
