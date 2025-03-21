@@ -87,6 +87,7 @@ public class PqrsResource {
      * or with status {@code 500 (Internal Server Error)} if the pqrsDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    /*
     @PutMapping("/{id}")
     public ResponseEntity<PqrsDTO> updatePqrs(
         @PathVariable(value = "id", required = false) final String id,
@@ -109,6 +110,8 @@ public class PqrsResource {
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, pqrsDTO.getId()))
             .body(pqrsDTO);
     }
+
+     */
 
     /**
      * {@code PATCH  /pqrs/:id} : Partial updates given fields of an existing pqrs, field will ignore if it is null
@@ -187,7 +190,7 @@ public class PqrsResource {
 
     //Modificaciones desde aqui
     //ya existe createPqrs pero esa la voy a dejar para mas adelante para users anomimos
-    @PostMapping
+    /* @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<PqrsDTO> registrarPqr(
         @RequestPart("pqrDTO") PqrsDTO pqrDTO,
@@ -221,10 +224,28 @@ public class PqrsResource {
         }
 
         LOG.debug("Solicitud para crear una PQR por ADMIN: {}", pqrDTO);
-        PqrsDTO nuevaPqr = pqrsService.save(pqrDTO, archivosAdjuntos);
+        PqrsDTO nuevaPqr = pqrsService.create(pqrDTO, archivosAdjuntos);
 
         return ResponseEntity.created(new URI("/api/pqrs/" + nuevaPqr.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, nuevaPqr.getId().toString()))
             .body(nuevaPqr);
+    }
+
+    */
+    // Crear una nueva PQRS
+    @PostMapping
+    public ResponseEntity<PqrsDTO> createPqrs(@RequestBody PqrsDTO pqrsDTO) {
+        LOG.debug("REST request to save Pqrs: {}", pqrsDTO);
+        PqrsDTO result = pqrsService.create(pqrsDTO);
+        return ResponseEntity.ok(result);
+    }
+
+    // Actualizar una PQRS existente
+    @PutMapping("/{id}")
+    public ResponseEntity<PqrsDTO> updatePqrs(@PathVariable String id, @RequestBody PqrsDTO pqrsDTO) {
+        LOG.debug("REST request to update Pqrs: {}", pqrsDTO);
+        pqrsDTO.setId(id); // Asegurar que el ID de la PQRS sea el correcto
+        PqrsDTO result = pqrsService.update(pqrsDTO);
+        return ResponseEntity.ok(result);
     }
 }

@@ -86,7 +86,7 @@ export default class ArchivoAdjuntoService {
     });
   }
 
-  public async uploadFile(file: File): Promise<any> {
+  /*public async uploadFile(file: File): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -95,6 +95,22 @@ export default class ArchivoAdjuntoService {
         'Content-Type': 'multipart/form-data',
       },
     });
+  }*/
+
+  public async uploadFile(file: File): Promise<IArchivoAdjunto> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${baseApiUrl}/subir`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data; // Devuelve el archivo subido
+    } catch (error) {
+      throw new Error('Error al subir el archivo');
+    }
   }
 
   public async deleteArchivo(nombre: string): Promise<void> {

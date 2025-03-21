@@ -117,44 +117,35 @@
           </div>
         </div>
         <div>
-          <!--
-          <div>
-            <h2>Subir Archivo para PQRS</h2>
+          <!--  <div>
+    <input type="file" @change="onFileChange" multiple />
 
-            <form @submit.prevent="uploadFile">
-              <div>
-                <label for="archivo">Adjuntar Archivo:</label>
-                <input id="archivo" type="file" @change="onFileChange" required />
-              </div>
 
-              <p v-if="archivo">{{ archivo.name }} ({{ (archivo.size / 1024).toFixed(2) }} KB)</p>
-
-              <button type="submit" :disabled="isUploading">Subir Archivo</button>
-            </form>
-
-            <button @click="previousState">Cancelar</button>
-          </div>
+    <ul>
+      <li v-for="(file, index) in files" :key="index">
+        {{ file.name }}
+        <button @click="removeFile(index)">Eliminar</button>
+      </li>
+    </ul>
+  </div>
 -->
-          <!-- Sección de archivos adjuntos -->
           <div>
-            <h3>Archivos Adjuntos</h3>
-            <ul v-if="pqrs.archivosAdjuntos && pqrs.archivosAdjuntos.length > 0">
-              <li v-for="archivo in pqrs.archivosAdjuntos" :key="archivo.id">
-                <a :href="archivo.urlArchivo" target="_blank">{{ archivo.nombre }}</a>
-                ({{ archivo.tipo }} - Subido el {{ formatDate(archivo.fechaSubida) }})
+            <!-- Input para seleccionar archivos (ocultamos el texto del nombre del archivo) -->
+            <input type="file" @change="onFileChange" multiple ref="fileInput" style="display: none" />
+            <button @click="triggerFileInput">Browse</button>
+            <!-- Botón personalizado para abrir el diálogo de selección de archivos -->
+
+            <!-- Lista de archivos seleccionados -->
+            <ul>
+              <li v-for="(file, index) in files" :key="index">
+                {{ file.name }}
+                <!-- Mostrar el nombre del archivo -->
+                <button @click="removeFile(index)">Eliminar</button>
+                <!-- Botón para eliminar -->
               </li>
             </ul>
-            <p v-else>No hay archivos adjuntos.</p>
           </div>
 
-          <!-- Subir nuevos archivos -->
-          <div>
-            <h3>Subir nuevos archivos</h3>
-            <input type="file" @change="onFileChange" multiple />
-            <button type="button" @click="uploadFile" :disabled="isUploading">
-              {{ isUploading ? 'Subiendo...' : 'Subir archivos' }}
-            </button>
-          </div>
           <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" @click="previousState()">
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.cancel')"></span>
           </button>

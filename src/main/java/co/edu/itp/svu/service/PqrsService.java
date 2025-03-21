@@ -77,13 +77,13 @@ public class PqrsService {
      * @param pqrsDTO the entity to save.
      * @return the persisted entity.
      */
-    public PqrsDTO update(PqrsDTO pqrsDTO) {
+    /* public PqrsDTO update(PqrsDTO pqrsDTO) {
         LOG.debug("Request to update Pqrs : {}", pqrsDTO);
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         pqrs.setEstado(pqrs.getEstado());
         pqrs = pqrsRepository.save(pqrs);
         return pqrsMapper.toDto(pqrs);
-    }
+    }*/
 
     /**
      * Partially update a pqrs.
@@ -186,6 +186,7 @@ public class PqrsService {
             });
     }
 
+    /*
     public PqrsDTO save(PqrsDTO pqrsDTO, List<ArchivoAdjuntoDTO> archivosAdjuntos) {
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         pqrs.setFechaCreacion(Instant.now());
@@ -224,5 +225,43 @@ public class PqrsService {
         resultDTO.setArchivosAdjuntosDTO(new HashSet<>(archivosAdjuntosDTO));
 
         return resultDTO;
+    }
+*/
+    public PqrsDTO create(PqrsDTO pqrsDTO) {
+        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
+
+        // Asociar archivos adjuntos a la PQRS usando sus IDs
+        if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
+            Set<String> archivosAdjuntosIds = pqrsDTO
+                .getArchivosAdjuntosDTO()
+                .stream()
+                .map(ArchivoAdjuntoDTO::getId)
+                .collect(Collectors.toSet());
+
+            Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>(archivoAdjuntoRepository.findAllById(archivosAdjuntosIds));
+            pqrs.setArchivosAdjuntos(archivosAdjuntos);
+        }
+
+        pqrs = pqrsRepository.save(pqrs);
+        return pqrsMapper.toDto(pqrs);
+    }
+
+    public PqrsDTO update(PqrsDTO pqrsDTO) {
+        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
+
+        // Asociar archivos adjuntos a la PQRS usando sus IDs
+        if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
+            Set<String> archivosAdjuntosIds = pqrsDTO
+                .getArchivosAdjuntosDTO()
+                .stream()
+                .map(ArchivoAdjuntoDTO::getId)
+                .collect(Collectors.toSet());
+
+            Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>(archivoAdjuntoRepository.findAllById(archivosAdjuntosIds));
+            pqrs.setArchivosAdjuntos(archivosAdjuntos);
+        }
+
+        pqrs = pqrsRepository.save(pqrs);
+        return pqrsMapper.toDto(pqrs);
     }
 }
