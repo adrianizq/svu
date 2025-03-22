@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -216,29 +217,12 @@ public class ArchivoAdjuntoResource {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al eliminar archivo: " + e.getMessage());
         }
     }
-    ////////////Listar archivos
-    /*
-    @GetMapping("/archivo-adjunto-list")
-    public ResponseEntity<List<String>> listFiles() {
-        try {
-            return ResponseEntity.ok(archivoAdjuntoService.listFiles());
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-    */
 
-    //****** Renombrar archivo
-    /*
-    @PutMapping("/rename")
-    public ResponseEntity<String> renameFile(@RequestParam String oldName, @RequestParam String newName) {
-        try {
-            archivoAdjuntoService.renameFile(oldName, newName);
-            return ResponseEntity.ok("Archivo renombrado de " + oldName + " a " + newName);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al renombrar archivo: " + e.getMessage());
-        }
+    @PostMapping("/upload")
+    public List<String> handleFileUpload(@RequestParam("files") List<MultipartFile> files) {
+        return files
+            .stream()
+            .map(archivoAdjuntoService::saveFile) // Guardar cada archivo y obtener su ID
+            .collect(Collectors.toList());
     }
-*/
-
 }

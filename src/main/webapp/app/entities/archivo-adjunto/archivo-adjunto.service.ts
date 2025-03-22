@@ -113,6 +113,29 @@ export default class ArchivoAdjuntoService {
     }
   }
 
+  // Método para subir archivos
+  public uploadFiles(files: File[]): Promise<string[]> {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
+    });
+
+    return new Promise<string[]>((resolve, reject) => {
+      axios
+        .post(`${baseApiUrl}/upload`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data', // Importante para enviar archivos
+          },
+        })
+        .then(res => {
+          resolve(res.data); // Devuelve los IDs de los archivos subidos
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  }
+
   public async deleteArchivo(nombre: string): Promise<void> {
     return axios.delete(`${baseApiUrl}/${nombre}`);
   }

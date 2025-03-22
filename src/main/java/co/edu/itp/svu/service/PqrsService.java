@@ -229,7 +229,6 @@ public class PqrsService {
 */
     public PqrsDTO create(PqrsDTO pqrsDTO) {
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-
         // Asociar archivos adjuntos a la PQRS usando sus IDs
         if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
             Set<String> archivosAdjuntosIds = pqrsDTO
@@ -241,7 +240,6 @@ public class PqrsService {
             Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>(archivoAdjuntoRepository.findAllById(archivosAdjuntosIds));
             pqrs.setArchivosAdjuntos(archivosAdjuntos);
         }
-
         pqrs = pqrsRepository.save(pqrs);
         return pqrsMapper.toDto(pqrs);
     }

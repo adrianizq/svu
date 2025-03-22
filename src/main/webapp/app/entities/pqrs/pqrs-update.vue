@@ -132,7 +132,7 @@
           <div>
             <!-- Input para seleccionar archivos (ocultamos el texto del nombre del archivo) -->
             <input type="file" @change="onFileChange" multiple ref="fileInput" style="display: none" />
-            <button @click="triggerFileInput">Browse</button>
+            <button @click="triggerFileInput">Subir Archivo</button>
             <!-- Botón personalizado para abrir el diálogo de selección de archivos -->
 
             <!-- Lista de archivos seleccionados -->

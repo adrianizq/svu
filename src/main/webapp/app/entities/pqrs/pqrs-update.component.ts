@@ -71,7 +71,7 @@ const removeFile = (index: number) => {
 
     // Subir archivos al servidor cuando se guarde la PQRS
     const uploadFiles = async () => {
-      isUploading.value = true;
+      /*isUploading.value = true;
       errorMessage.value = null;
       successMessage.value = null;
 
@@ -82,31 +82,53 @@ const removeFile = (index: number) => {
           formData.append('file', file); // Agregar el archivo al FormData
 
           // Subir el archivo al servidor
-          const response = await archivoAdjuntoService.uploadFile(formData);
+          //const response = await archivoAdjuntoService.uploadFile(formData);
+          
           console.log('Archivo subido:', response.data);
 
           // Agregar el archivo subido a la lista de archivos adjuntos
-          uploadedFiles.value.push(response.data);
+          uploadedFiles.value.push(formData.values);
         }
 
+        this.pqrs.archivosAdjuntos = uploadFiles;
         successMessage.value = 'Archivos subidos exitosamente.';
       } catch (error) {
         errorMessage.value = 'Error al subir los archivos.';
         console.error('Error subiendo archivos:', error);
       } finally {
         isUploading.value = false;
+      }*/
+
+      const formData = new FormData();
+      files.value.forEach((file, index) => {
+        formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
+      });
+
+      try {
+        // Subir archivos y obtener sus IDs
+        //const uploadResponse = await axios.post('/api/archivo-adjuntos/upload', formData, {
+        //     headers: {
+        //    'Content-Type': 'multipart/form-data',
+        //  },
+        // });
+        const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
+        const archivosAdjuntosIds = uploadResponse.data; // IDs de los archivos subidos
+
+        // Crear la PQRS con los IDs de los archivos adjuntos
+        const pqrsDTO = {
+          titulo: 'Título de la PQRS',
+          descripcion: 'Descripción de la PQRS',
+          archivosAdjuntosDTO: archivosAdjuntosIds.map(id => ({ id })), // Asociar los IDs de los archivos
+        };
+
+        //const createResponse = await axios.post('/api/pqrs', pqrsDTO);
+        const createResponse = await pqrsService().create(pqrsDTO);
+        console.log('PQRS creada:', createResponse.data);
+      } catch (error) {
+        console.error('Error:', error);
       }
     };
 
-    /*
-    const onFileChange = (event: Event) => {
-      const input = event.target as HTMLInputElement;
-      if (input.files && input.files.length > 0) {
-        const newFiles = Array.from(input.files);
-        files.value = [...files.value, ...newFiles];
-      }
-    };
-*/
     // Método para manejar la selección de archivos
     const onFileChange = (event: Event) => {
       const input = event.target as HTMLInputElement;
@@ -222,17 +244,17 @@ const removeFile = (index: number) => {
       } */
       try {
         // Subir los archivos antes de guardar la PQRS
-        await uploadFiles();
+        await this.uploadFiles();
 
         // Asignar los archivos subidos a la PQRS
-        pqrs.value.archivosAdjuntosDTO = uploadedFiles.value;
+        this.pqrs.value.archivosAdjuntosDTO = this.uploadedFiles.value;
 
         // Guardar la PQRS
-        if (pqrs.value.id) {
-          const updatedPqrs = await pqrsService().update(pqrs.value);
+        if (this.pqrs.value.id) {
+          const updatedPqrs = await pqrsService().update(this.pqrs.value);
           alertService.showInfo(t$('ventanillaUnicaApp.pqrs.updated', { param: updatedPqrs.id }));
         } else {
-          const createdPqrs = await pqrsService().create(pqrs.value);
+          const createdPqrs = await pqrsService().create(this.pqrs.value);
           alertService.showSuccess(t$('ventanillaUnicaApp.pqrs.created', { param: createdPqrs.id }).toString());
         }
 
@@ -241,9 +263,9 @@ const removeFile = (index: number) => {
       } catch (error) {
         // Verificar si error.response existe antes de pasarlo a showHttpError
         if (error.response) {
-          alertService.showHttpError(error.response); // Usar alertService directamente, sin "this"
+          this.alertService.showHttpError(error.response); // Usar alertService directamente, sin "this"
         } else {
-          alertService.showError('Ocurrió un error inesperado.'); // Mensaje genérico
+          this.alertService.showError('Ocurrió un error inesperado.'); // Mensaje genérico
         }
       }
     },

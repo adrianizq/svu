@@ -196,29 +196,35 @@ public class ArchivoAdjuntoService {
             throw new IOException("El archivo no existe o no es un archivo válido.");
         }
     }
-    //*** Listar Archivos
-    /*public List<String> listFiles() throws IOException {
-        List<String> fileNames = new ArrayList<>();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(rootLocation)) {
-            for (Path path : stream) {
-                if (Files.isRegularFile(path)) {
-                    fileNames.add(path.getFileName().toString());
-                }
+
+    public String saveFile(MultipartFile file) {
+        Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
+        if (!Files.exists(rootLocation)) {
+            try {
+                Files.createDirectories(rootLocation); // Crear el directorio si no existe
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-        return fileNames;
-    }*/
-
-    //****** Renombrar archivo
-    /*
-    public void renameFile(String oldName, String newName) throws IOException {
-        Path oldPath = rootLocation.resolve(oldName);
-        Path newPath = rootLocation.resolve(newName);
-        if (Files.exists(oldPath) && !Files.exists(newPath)) {
-            Files.move(oldPath, newPath);
-        } else {
-            throw new IOException("El archivo no existe o el nuevo nombre ya está en uso.");
+        String fileName = file.getOriginalFilename();
+        Path destinationPath = rootLocation.resolve(fileName);
+        // Guardar el archivo
+        try {
+            file.transferTo(destinationPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        // Crear la URL o ruta para almacenar en la base de datos
+        String urlArchivo = "uploads/" + fileName;
+
+        // Crear la instancia de ArchivoAdjunto
+        ArchivoAdjunto archivoAdjunto = new ArchivoAdjunto()
+            .nombre(fileName)
+            .tipo(file.getContentType())
+            .urlArchivo(urlArchivo)
+            .fechaSubida(Instant.now());
+
+        archivoAdjunto = archivoAdjuntoRepository.save(archivoAdjunto);
+        return archivoAdjunto.getId();
     }
-*/
 }
