@@ -43,6 +43,7 @@
               <small class="form-text text-danger" v-for="error of v$.descripcion.$errors" :key="error.$uid">{{ error.$message }}</small>
             </div>
           </div>
+          <!--  -->
           <div class="form-group">
             <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.fechaCreacion')" for="pqrs-fechaCreacion"></label>
             <div class="d-flex">
@@ -81,6 +82,7 @@
               />
             </div>
           </div>
+          <!--  -->
           <div class="form-group">
             <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.estado')" for="pqrs-estado"></label>
             <input
@@ -117,22 +119,15 @@
           </div>
         </div>
         <div>
-          <!--  <div>
-    <input type="file" @change="onFileChange" multiple />
-
-
-    <ul>
-      <li v-for="(file, index) in files" :key="index">
-        {{ file.name }}
-        <button @click="removeFile(index)">Eliminar</button>
-      </li>
-    </ul>
-  </div>
--->
           <div>
             <!-- Input para seleccionar archivos (ocultamos el texto del nombre del archivo) -->
-            <input type="file" @change="onFileChange" multiple ref="fileInput" style="display: none" />
-            <button @click="triggerFileInput">Subir Archivo</button>
+
+            <input type="file" ref="fileInput" @change="onFileChange" multiple style="display: none" />
+
+            <!-- Botón para subir archivos -->
+            <button type="button" @click="triggerFileInput" :disabled="isUploading">
+              {{ isUploading ? 'Subiendo...' : 'Seleccionar archivos' }}
+            </button>
             <!-- Botón personalizado para abrir el diálogo de selección de archivos -->
 
             <!-- Lista de archivos seleccionados -->
@@ -149,11 +144,21 @@
           <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" @click="previousState()">
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.cancel')"></span>
           </button>
-          <button
+          <!--<button
             type="submit"
             id="save-entity"
             data-cy="entityCreateSaveButton"
-            :disabled="v$.$invalid || isSaving"
+            :disabled="v$.$invalid || isSaving || isUploading"
+            class="btn btn-primary"
+          > 
+            <font-awesome-icon icon="save"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.save')"></span>
+          </button> -->
+          <button
+            type="button"
+            id="save-entity"
+            @click="save"
+            data-cy="entityCreateSaveButton"
+            :disabled="v$.$invalid || isSaving || isUploading"
             class="btn btn-primary"
           >
             <font-awesome-icon icon="save"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.save')"></span>

@@ -1,3 +1,4 @@
+/*
 import { type Ref, computed, defineComponent, inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -15,8 +16,6 @@ import { type IPqrs, Pqrs } from '@/shared/model/pqrs.model';
 import ArchivoAdjuntoService from '@/entities/archivo-adjunto/archivo-adjunto.service';
 import { type IArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
 
-import axios from 'axios'; // Para subir archivos
-
 export default defineComponent({
   compatConfig: { MODE: 3 },
   name: 'PqrsUpdate',
@@ -28,7 +27,6 @@ export default defineComponent({
 
     const files = ref<File[]>([]); // Lista de archivos seleccionados (temporal)
     const fileInput = ref<HTMLInputElement | null>(null); // Referencia al input de tipo file
-
     const uploadedFiles = ref<IArchivoAdjunto[]>([]); // Lista de archivos subidos
     const isUploading = ref(false); // Estado de subida
     const errorMessage = ref<string | null>(null); // Mensaje de error
@@ -36,21 +34,13 @@ export default defineComponent({
 
     const pqrs: Ref<IPqrs> = ref(new Pqrs());
     const oficinas: Ref<IOficina[]> = ref([]);
-    const isSaving = ref(false);
+    let isSaving = ref(false);
     const currentLanguage = inject('currentLanguage', () => computed(() => navigator.language ?? 'es'), true);
 
     const route = useRoute();
     const router = useRouter();
 
     const previousState = () => router.go(-1);
-
-    // Eliminar un archivo de la lista de seleccionados
-    /*
-const removeFile = (index: number) => {
-  console.log('Archivo a eliminar:', files.value[index].name); // Verifica que el archivo correcto se está eliminando
-  files.value = files.value.filter((_, i) => i !== index); // Crear una nueva lista sin el archivo que se desea eliminar
-  console.log('Lista actualizada:', files.value); // Verifica que la lista se actualizó correctamente
-}; */
 
     // Método para eliminar un archivo de la lista y del input de tipo file
     const removeFile = (index: number) => {
@@ -67,65 +57,25 @@ const removeFile = (index: number) => {
       if (fileInput.value) {
         fileInput.value.click(); // Simular clic en el input de tipo file
       }
-    };
+    }; 
+    
 
     // Subir archivos al servidor cuando se guarde la PQRS
     const uploadFiles = async () => {
-      /*isUploading.value = true;
-      errorMessage.value = null;
-      successMessage.value = null;
-
-      try {
-        // Subir cada archivo individualmente
-        for (const file of files.value) {
-          const formData = new FormData();
-          formData.append('file', file); // Agregar el archivo al FormData
-
-          // Subir el archivo al servidor
-          //const response = await archivoAdjuntoService.uploadFile(formData);
-          
-          console.log('Archivo subido:', response.data);
-
-          // Agregar el archivo subido a la lista de archivos adjuntos
-          uploadedFiles.value.push(formData.values);
-        }
-
-        this.pqrs.archivosAdjuntos = uploadFiles;
-        successMessage.value = 'Archivos subidos exitosamente.';
-      } catch (error) {
-        errorMessage.value = 'Error al subir los archivos.';
-        console.error('Error subiendo archivos:', error);
-      } finally {
-        isUploading.value = false;
-      }*/
-
+      
       const formData = new FormData();
-      files.value.forEach((file, index) => {
+      files.value.forEach((file) => {
         formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
       });
 
       try {
-        // Subir archivos y obtener sus IDs
-        //const uploadResponse = await axios.post('/api/archivo-adjuntos/upload', formData, {
-        //     headers: {
-        //    'Content-Type': 'multipart/form-data',
-        //  },
-        // });
         const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
-        const archivosAdjuntosIds = uploadResponse.data; // IDs de los archivos subidos
-
-        // Crear la PQRS con los IDs de los archivos adjuntos
-        const pqrsDTO = {
-          titulo: 'Título de la PQRS',
-          descripcion: 'Descripción de la PQRS',
-          archivosAdjuntosDTO: archivosAdjuntosIds.map(id => ({ id })), // Asociar los IDs de los archivos
-        };
-
-        //const createResponse = await axios.post('/api/pqrs', pqrsDTO);
-        const createResponse = await pqrsService().create(pqrsDTO);
-        console.log('PQRS creada:', createResponse.data);
-      } catch (error) {
-        console.error('Error:', error);
+        uploadedFiles.value = uploadResponse.data; // Guardar los archivos subidos (con sus IDs)
+        console.log('Archivos subidos:', uploadedFiles.value); // Verificar los datos
+        }
+        catch (error) {
+        console.error('Error subiendo archivos:', error);
+        throw error; // Relanzar el error para manejarlo en el método save
       }
     };
 
@@ -221,53 +171,332 @@ const removeFile = (index: number) => {
   },
   methods: {
     async save(): Promise<void> {
-      /*try {
-        // Subir los archivos antes de guardar la PQRS
-        await this.uploadFiles();
-
-        // Asignar los archivos subidos a la PQRS
-        this.pqrs.archivosAdjuntosDTO = this.uploadedFiles;
-
-        // Guardar la PQRS
-        if (this.pqrs.id) {
-          const updatedPqrs = await this.pqrsService().update(this.pqrs);
-          alertService.showInfo(this.t$('ventanillaUnicaApp.pqrs.updated', { param: updatedPqrs.id }));
-        } else {
-          const createdPqrs = await this.pqrsService().create(this.pqrs);
-          this.alertService.showSuccess(this.t$('ventanillaUnicaApp.pqrs.created', { param: createdPqrs.id }).toString());
-        }
-
-        // Redirigir a la página anterior
-        this.previousState();
-      } catch (error) {
-        this.alertService.showHttpError(error.response);
-      } */
       try {
-        // Subir los archivos antes de guardar la PQRS
-        await this.uploadFiles();
-
-        // Asignar los archivos subidos a la PQRS
-        this.pqrs.value.archivosAdjuntosDTO = this.uploadedFiles.value;
-
-        // Guardar la PQRS
-        if (this.pqrs.value.id) {
-          const updatedPqrs = await pqrsService().update(this.pqrs.value);
-          alertService.showInfo(t$('ventanillaUnicaApp.pqrs.updated', { param: updatedPqrs.id }));
-        } else {
-          const createdPqrs = await pqrsService().create(this.pqrs.value);
-          alertService.showSuccess(t$('ventanillaUnicaApp.pqrs.created', { param: createdPqrs.id }).toString());
+        this.isSaving = true; // Evitar doble envío
+    
+        // 1️⃣ Subir los archivos antes de guardar la PQRS
+        if (this.files.length > 0) {
+          await this.uploadFiles();
         }
-
-        // Redirigir a la página anterior
-        previousState();
+    
+        // 2️⃣ Asignar los archivos subidos a la PQRS como referencias DBRef
+        if (this.pqrs && this.uploadedFiles.length > 0) {
+          this.pqrs.archivosAdjuntos = this.uploadedFiles.map(file => ({
+            id: file.id, // Suponiendo que `file.id` es un string o ObjectId
+            nombre: file.nombre, // Ajusta según la estructura real de IArchivoAdjunto
+            url: file.urlArchivo, // Si hay una URL asociada al archivo
+          }));
+        }
+    
+        // 3️⃣ Guardar la PQRS en la base de datos
+        
+        let savedPqrs;
+        if (this.pqrs.id) {
+          savedPqrs = await this.pqrsService().update(this.pqrs);
+          this.alertService.showInfo(this.t$('ventanillaUnicaApp.pqrs.updated', { param: savedPqrs.id }));
+        } else {
+          savedPqrs = await this.pqrsService().create(this.pqrs);
+          console.log('PQRS creada:', savedPqrs);
+          this.alertService.showSuccess(this.t$('ventanillaUnicaApp.pqrs.created', { param: savedPqrs.id }).toString());
+        }
+        
+        this.previousState(); // Redirigir a la lista de PQRS
       } catch (error) {
-        // Verificar si error.response existe antes de pasarlo a showHttpError
-        if (error.response) {
-          this.alertService.showHttpError(error.response); // Usar alertService directamente, sin "this"
-        } else {
-          this.alertService.showError('Ocurrió un error inesperado.'); // Mensaje genérico
+        console.error('Error guardando la PQRS:', error);
+        this.alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
+      } finally {
+        this.isSaving = false;
+      }
+    }
+    
+  },
+}); */
+import { type Ref, computed, defineComponent, inject, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
+import { useVuelidate } from '@vuelidate/core';
+
+import PqrsService from './pqrs.service';
+import useDataUtils from '@/shared/data/data-utils.service';
+import { useDateFormat, useValidation } from '@/shared/composables';
+import { useAlertService } from '@/shared/alert/alert.service';
+
+import OficinaService from '@/entities/oficina/oficina.service';
+import { type IOficina } from '@/shared/model/oficina.model';
+import { type IPqrs, Pqrs } from '@/shared/model/pqrs.model';
+
+import ArchivoAdjuntoService from '@/entities/archivo-adjunto/archivo-adjunto.service';
+import { type IArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
+
+export default defineComponent({
+  compatConfig: { MODE: 3 },
+  name: 'PqrsUpdate',
+  setup() {
+    const pqrsService = inject('pqrsService', () => new PqrsService());
+    const alertService = inject('alertService', () => useAlertService(), true);
+    const archivoAdjuntoService = inject('archivoAdjuntoService', () => new ArchivoAdjuntoService());
+    const oficinaService = inject('oficinaService', () => new OficinaService());
+
+    const files = ref<File[]>([]); // Lista de archivos seleccionados (temporal)
+    const fileInput = ref<HTMLInputElement | null>(null); // Referencia al input de tipo file
+    const uploadedFiles = ref<IArchivoAdjunto[]>([]); // Lista de archivos subidos
+    const isUploading = ref(false); // Estado de subida
+    const errorMessage = ref<string | null>(null); // Mensaje de error
+    const successMessage = ref<string | null>(null); // Mensaje de éxito
+
+    const pqrs: Ref<IPqrs> = ref(new Pqrs());
+    const oficinas: Ref<IOficina[]> = ref([]);
+    let isSaving = ref(false);
+    const currentLanguage = inject('currentLanguage', () => computed(() => navigator.language ?? 'es'), true);
+
+    const route = useRoute();
+    const router = useRouter();
+
+    const previousState = () => router.go(-1);
+
+    // Método para eliminar un archivo de la lista y del input de tipo file
+    const removeFile = (index: number) => {
+      files.value = files.value.filter((_, i) => i !== index); // Crear una nueva lista sin el archivo que se desea eliminar
+
+      // Reiniciar el input de tipo file
+      if (fileInput.value) {
+        fileInput.value.value = ''; // Reiniciar el valor del input
+      }
+    };
+
+    // Método para abrir el diálogo de selección de archivos
+    const triggerFileInput = () => {
+      if (fileInput.value) {
+        fileInput.value.click(); // Simular clic en el input de tipo file
+      }
+    };
+
+    // Método para manejar la selección de archivos
+    const onFileChange = (event: Event) => {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files.length > 0) {
+        const newFiles = Array.from(input.files); // Convertir FileList a array
+        files.value = [...files.value, ...newFiles]; // Agregar nuevos archivos a la lista
+      }
+    };
+
+    // Subir archivos al servidor
+    const uploadFiles = async () => {
+      isUploading.value = true;
+      errorMessage.value = null;
+      successMessage.value = null;
+
+      const formData = new FormData();
+      files.value.forEach(file => {
+        formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
+      });
+
+      try {
+        console.log('Iniciando subida de archivos...'); // Debug
+        const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
+        uploadedFiles.value = uploadResponse; // Guardar los archivos subidos (con sus IDs)
+        console.log('Archivos subidos correctamente:', uploadedFiles.value); // Debug
+        successMessage.value = 'Archivos subidos correctamente';
+      } catch (error) {
+        console.error('Error subiendo archivos:', error); // Debug
+        errorMessage.value = 'Error al subir archivos';
+        throw error; // Relanzar el error para manejarlo en el método save
+      } finally {
+        isUploading.value = false;
+      }
+    };
+
+    // Obtener la PQRS actual
+    const retrievePqrs = async (pqrsId: string) => {
+      try {
+        const res = await pqrsService().find(pqrsId);
+        res.fechaCreacion = new Date(res.fechaCreacion);
+        res.fechaLimiteRespuesta = new Date(res.fechaLimiteRespuesta);
+
+        // Si la PQRS ya tiene archivos adjuntos, cargarlos
+        if (res.archivosAdjuntos) {
+          uploadedFiles.value = res.archivosAdjuntos;
         }
+
+        pqrs.value = res;
+      } catch (error) {
+        alertService.showHttpError(error.response);
+      }
+    };
+
+    // Cargar la PQRS si estamos editando
+    if (route.params?.pqrsId) {
+      retrievePqrs(route.params.pqrsId as string);
+    }
+
+    // Inicializar relaciones (oficinas)
+    const initRelationships = () => {
+      oficinaService()
+        .retrieve()
+        .then(res => {
+          oficinas.value = res.data;
+        });
+    };
+
+    initRelationships();
+
+    // Utilidades de datos y validación
+    const dataUtils = useDataUtils();
+    const { t: t$ } = useI18n();
+    const validations = useValidation();
+    const validationRules = {
+      titulo: {
+        required: validations.required(t$('entity.validation.required').toString()),
+      },
+      descripcion: {
+        required: validations.required(t$('entity.validation.required').toString()),
+      },
+      fechaCreacion: {
+        required: validations.required(t$('entity.validation.required').toString()),
+      },
+      fechaLimiteRespuesta: {},
+      estado: {
+        required: validations.required(t$('entity.validation.required').toString()),
+      },
+      oficinaResponder: {},
+    };
+    const v$ = useVuelidate(validationRules, pqrs as any);
+    v$.value.$validate();
+
+    return {
+      pqrsService,
+      alertService,
+      pqrs,
+      previousState,
+      isSaving,
+      currentLanguage,
+      oficinas,
+      files,
+      fileInput,
+      uploadedFiles,
+      uploadFiles,
+      onFileChange,
+      triggerFileInput,
+      removeFile,
+      isUploading,
+      errorMessage,
+      successMessage,
+      ...dataUtils,
+      v$,
+      ...useDateFormat({ entityRef: pqrs }),
+      t$,
+    };
+  },
+  methods: {
+    created(): void {},
+
+    async save(): Promise<void> {
+      try {
+        // Evitar doble envío
+        if (this.isSaving) {
+          return; // Si ya se está guardando, no hacer nada
+        }
+
+        this.isSaving = true; // Evitar doble envío
+        console.log('entro a save');
+
+        // 1️⃣ Subir los archivos antes de guardar la PQRS
+        if (this.files.length > 0) {
+          await this.uploadFiles();
+        }
+
+        // 2️⃣ Asignar los archivos subidos a la PQRS como referencias DBRef
+        /* if (this.pqrs && this.uploadedFiles.length > 0) {
+          this.pqrs.archivosAdjuntos = this.uploadedFiles.map(file => ({
+            id: file.id, // Suponiendo que `file.id` es un string o ObjectId
+            nombre: file.nombre, // Ajusta según la estructura real de IArchivoAdjunto
+            url: file.urlArchivo, // Si hay una URL asociada al archivo
+          }));
+        }*/
+
+        // 2️⃣ Asignar archivos subidos a la PQRS
+        if (this.pqrs && this.uploadedFiles.length > 0) {
+          this.pqrs.archivosAdjuntos = this.uploadedFiles.map(file => ({
+            id: file.id!, // Usamos ! para indicar que sabemos que no es undefined
+            nombre: file.nombre!, // Usamos ! para indicar que sabemos que no es undefined
+            tipo: file.tipo || 'application/octet-stream',
+            urlArchivo: file.urlArchivo ?? null, // Proporcionamos null como valor por defecto
+            fechaSubida: file.fechaSubida ? new Date(file.fechaSubida) : new Date(),
+          }));
+          console.log('Archivos asignados a PQRS:', this.pqrs.archivosAdjuntos); // Debug
+        }
+
+        console.log('llego hasta antes de uodate o guardar');
+
+        // 3️⃣ Guardar la PQRS en la base de datos
+        let savedPqrs;
+        if (this.pqrs.id) {
+          savedPqrs = await this.pqrsService().update(this.pqrs);
+          this.alertService.showInfo(this.t$('ventanillaUnicaApp.pqrs.updated', { param: savedPqrs.id }));
+        } else {
+          savedPqrs = await this.pqrsService().create(this.pqrs);
+          console.log('PQRS creada:', savedPqrs);
+          this.alertService.showSuccess(this.t$('ventanillaUnicaApp.pqrs.created', { param: savedPqrs.id }).toString());
+        }
+
+        this.previousState(); // Redirigir a la lista de PQRS
+      } catch (error) {
+        console.error('Error guardando la PQRS:', error);
+        this.alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
+      } finally {
+        this.isSaving = false;
       }
     },
+
+    /*
+    async save(): Promise<void> {
+      try {
+        // Evitar doble envío
+        if (this.isSaving) {
+          return;
+        }
+  
+        this.isSaving = true; // Bloquear el guardado
+  
+        // 1️⃣ Subir los archivos antes de guardar la PQRS
+        if (this.files.length > 0) {
+          this.isUploading = true; // Bloquear la subida de archivos
+          console.log('Subiendo archivos...'); // Debug
+          await this.uploadFiles(); // Esperar a que los archivos se suban
+          console.log('Archivos subidos:', this.uploadedFiles); // Debug
+          this.isUploading = false; // Desbloquear la subida de archivos
+        }
+  
+        // 2️⃣ Asignar los archivos subidos a la PQRS
+        if (this.uploadedFiles.length > 0) {
+          this.pqrs.archivosAdjuntos = this.uploadedFiles.map(file => ({
+            id: file.id, // ID del archivo subido
+            nombre: file.nombre, // Nombre del archivo
+            tipo: file.tipo, // Tipo de archivo
+            urlArchivo: file.urlArchivo, // URL del archivo
+            fechaSubida: file.fechaSubida, // Fecha de subida
+          }));
+        }
+  
+        // 3️⃣ Guardar la PQRS en la base de datos
+        console.log('Guardando PQRS...'); // Debug
+        let savedPqrs;
+        if (this.pqrs.id) {
+          savedPqrs = await this.pqrsService().update(this.pqrs);
+          this.alertService.showInfo(this.t$('ventanillaUnicaApp.pqrs.updated', { param: savedPqrs.id }));
+        } else {
+          savedPqrs = await this.pqrsService().create(this.pqrs);
+          this.alertService.showSuccess(this.t$('ventanillaUnicaApp.pqrs.created', { param: savedPqrs.id }).toString());
+        }
+        console.log('PQRS guardada:', savedPqrs); // Debug
+  
+        this.previousState(); // Redirigir a la lista de PQRS
+      } catch (error) {
+        console.error('Error guardando la PQRS:', error); // Debug
+        this.alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
+      } finally {
+        this.isSaving = false; // Desbloquear el guardado
+      }
+    },*/
   },
 });

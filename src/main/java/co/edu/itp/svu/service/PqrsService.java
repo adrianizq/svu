@@ -12,13 +12,13 @@ import co.edu.itp.svu.service.dto.PqrsDTO;
 import co.edu.itp.svu.service.mapper.ArchivoAdjuntoMapper;
 import co.edu.itp.svu.service.mapper.OficinaMapper;
 import co.edu.itp.svu.service.mapper.PqrsMapper;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,13 +40,16 @@ public class PqrsService {
     private final ArchivoAdjuntoRepository archivoAdjuntoRepository;
     private OficinaMapper oficinaMapper;
 
+    private final MongoTemplate mongoTemplate; // Para operaciones más avanzadas
+
     public PqrsService(
         PqrsRepository pqrsRepository,
         PqrsMapper pqrsMapper,
         ArchivoAdjuntoMapper archivoAdjuntoMapper,
         OficinaRepository oficinaRepository,
         ArchivoAdjuntoRepository archivoAdjuntoRepository,
-        OficinaMapper oficinaMapper
+        OficinaMapper oficinaMapper,
+        MongoTemplate mongoTemplate
     ) {
         this.pqrsRepository = pqrsRepository;
         this.pqrsMapper = pqrsMapper;
@@ -54,36 +57,8 @@ public class PqrsService {
         this.oficinaRepository = oficinaRepository;
         this.archivoAdjuntoRepository = archivoAdjuntoRepository;
         this.oficinaMapper = oficinaMapper;
+        this.mongoTemplate = mongoTemplate;
     }
-
-    /**
-     * Save a pqrs.
-     *
-     * @param pqrsDTO the entity to save.
-     * @return the persisted entity.
-     */
-    /* public PqrsDTO save(PqrsDTO pqrsDTO) {
-        LOG.debug("Request to save Pqrs : {}", pqrsDTO);
-        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        pqrs.setFechaCreacion(Instant.now());
-        pqrs.setEstado("PENDIENTE"); // Estado por defecto
-        pqrs = pqrsRepository.save(pqrs);
-        return pqrsMapper.toDto(pqrs);
-    }*/
-
-    /**
-     * Update a pqrs.
-     *
-     * @param pqrsDTO the entity to save.
-     * @return the persisted entity.
-     */
-    /* public PqrsDTO update(PqrsDTO pqrsDTO) {
-        LOG.debug("Request to update Pqrs : {}", pqrsDTO);
-        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        pqrs.setEstado(pqrs.getEstado());
-        pqrs = pqrsRepository.save(pqrs);
-        return pqrsMapper.toDto(pqrs);
-    }*/
 
     /**
      * Partially update a pqrs.
@@ -186,58 +161,25 @@ public class PqrsService {
             });
     }
 
-    /*
-    public PqrsDTO save(PqrsDTO pqrsDTO, List<ArchivoAdjuntoDTO> archivosAdjuntos) {
-        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        pqrs.setFechaCreacion(Instant.now());
-        pqrs.setEstado("PENDIENTE"); // Estado por defecto
-
-        // Guardamos la PQRS primero para obtener su ID
-        pqrs = pqrsRepository.save(pqrs);
-
-        // Guardamos los archivos adjuntos y los vinculamos a la PQRS
-        Pqrs finalPqrs = pqrs;
-        Set<ArchivoAdjunto> archivos = archivosAdjuntos
-            .stream()
-            .map(dto -> {
-                ArchivoAdjunto archivo = new ArchivoAdjunto();
-                archivo.setNombre(dto.getNombre());
-                archivo.setTipo(dto.getTipo());
-                archivo.setUrlArchivo(dto.getUrlArchivo());
-                archivo.setFechaSubida(Instant.now());
-                return archivo;
-            })
-            .collect(Collectors.toSet());
-
-        // Guardamos los archivos adjuntos en la base de datos
-        archivos = new HashSet<>(archivoAdjuntoRepository.saveAll(archivos));
-
-        // Asignamos los archivos guardados a la PQRS y guardamos nuevamente
-        pqrs.setArchivosAdjuntos(archivos);
-        pqrs = pqrsRepository.save(pqrs);
-
-        // Convertimos la PQRS a DTO
-        PqrsDTO resultDTO = pqrsMapper.toDto(pqrs);
-
-        // Convertimos los archivos adjuntos a DTO y los asignamos correctamente
-        List<ArchivoAdjuntoDTO> archivosAdjuntosDTO = archivoAdjuntoMapper.toDto(new ArrayList<>(archivos));
-        //resultDTO.setArchivosAdjuntosDTO((Set<ArchivoAdjuntoDTO>) archivosAdjuntosDTO);
-        resultDTO.setArchivosAdjuntosDTO(new HashSet<>(archivosAdjuntosDTO));
-
-        return resultDTO;
-    }
-*/
     public PqrsDTO create(PqrsDTO pqrsDTO) {
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         // Asociar archivos adjuntos a la PQRS usando sus IDs
-        if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
+        if (pqrsDTO.getArchivosAdjuntosDTO() != null && !pqrsDTO.getArchivosAdjuntosDTO().isEmpty()) {
             Set<String> archivosAdjuntosIds = pqrsDTO
                 .getArchivosAdjuntosDTO()
                 .stream()
                 .map(ArchivoAdjuntoDTO::getId)
                 .collect(Collectors.toSet());
 
+            // Recuperar los archivos adjuntos desde la base de datos
             Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>(archivoAdjuntoRepository.findAllById(archivosAdjuntosIds));
+
+            // Verificar que se encontraron todos los archivos adjuntos
+            if (archivosAdjuntos.size() != archivosAdjuntosIds.size()) {
+                throw new RuntimeException("Algunos archivos adjuntos no fueron encontrados.");
+            }
+
+            // Asociar los archivos adjuntos a la PQRS
             pqrs.setArchivosAdjuntos(archivosAdjuntos);
         }
         pqrs = pqrsRepository.save(pqrs);
