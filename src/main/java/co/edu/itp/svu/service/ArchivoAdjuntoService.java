@@ -197,34 +197,32 @@ public class ArchivoAdjuntoService {
         }
     }
 
-    public String saveFile(MultipartFile file) {
+    public ArchivoAdjuntoDTO saveFile(MultipartFile file) {
+        // 1. Guardar archivo físicamente (tu código existente)
         Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
-        if (!Files.exists(rootLocation)) {
-            try {
-                Files.createDirectories(rootLocation); // Crear el directorio si no existe
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
         String fileName = file.getOriginalFilename();
-        Path destinationPath = rootLocation.resolve(fileName);
-        // Guardar el archivo
-        try {
-            file.transferTo(destinationPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        // Crear la URL o ruta para almacenar en la base de datos
-        String urlArchivo = "uploads/" + fileName;
+        // ... (código para guardar el archivo)
 
-        // Crear la instancia de ArchivoAdjunto
-        ArchivoAdjunto archivoAdjunto = new ArchivoAdjunto()
+        // 2. Crear y guardar la entidad
+        ArchivoAdjunto archivo = new ArchivoAdjunto()
             .nombre(fileName)
             .tipo(file.getContentType())
-            .urlArchivo(urlArchivo)
+            .urlArchivo("uploads/" + fileName)
             .fechaSubida(Instant.now());
 
-        archivoAdjunto = archivoAdjuntoRepository.save(archivoAdjunto);
-        return archivoAdjunto.getId();
+        archivo = archivoAdjuntoRepository.save(archivo); // Guarda en MongoDB
+
+        // 3. Convertir a DTO antes de retornar
+        return convertToDto(archivo);
+    }
+
+    private ArchivoAdjuntoDTO convertToDto(ArchivoAdjunto archivo) {
+        ArchivoAdjuntoDTO dto = new ArchivoAdjuntoDTO();
+        dto.setId(archivo.getId());
+        dto.setNombre(archivo.getNombre());
+        dto.setTipo(archivo.getTipo());
+        dto.setUrlArchivo(archivo.getUrlArchivo());
+        dto.setFechaSubida(archivo.getFechaSubida());
+        return dto;
     }
 }

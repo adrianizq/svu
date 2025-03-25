@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -218,11 +219,18 @@ public class ArchivoAdjuntoResource {
         }
     }
 
-    @PostMapping("/upload")
+    /*  @PostMapping("/upload")
     public List<String> handleFileUpload(@RequestParam("files") List<MultipartFile> files) {
         return files
             .stream()
             .map(archivoAdjuntoService::saveFile) // Guardar cada archivo y obtener su ID
+            .collect(Collectors.toList());
+    }*/
+    @PostMapping("/upload")
+    public List<ArchivoAdjuntoDTO> handleFileUpload(@RequestParam("files") List<MultipartFile> files) {
+        return files
+            .stream()
+            .map(archivoAdjuntoService::saveFile) // Ahora saveFile retorna DTO
             .collect(Collectors.toList());
     }
 }

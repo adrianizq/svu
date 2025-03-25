@@ -9,7 +9,7 @@ export interface IPqrs {
   fechaLimiteRespuesta?: Date | null;
   estado?: string;
   oficinaResponder?: IOficina | null;
-  archivosAdjuntos?: IArchivoAdjunto[]; // Lista de archivos adjuntos
+  archivosAdjuntosDTO?: IArchivoAdjunto[] | null; // Lista de archivos adjuntos
 }
 
 export class Pqrs implements IPqrs {
@@ -21,6 +21,6 @@ export class Pqrs implements IPqrs {
     public fechaLimiteRespuesta?: Date | null,
     public estado?: string,
     public oficinaResponder?: IOficina | null,
-    public archivosAdjuntos?: IArchivoAdjunto[], // Lista de archivos adjuntos
+    public archivosAdjuntosDTO?: IArchivoAdjunto[] | null, // Lista de archivos adjuntos
   ) {}
 }

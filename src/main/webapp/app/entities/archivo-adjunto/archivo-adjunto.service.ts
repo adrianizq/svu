@@ -86,17 +86,6 @@ export default class ArchivoAdjuntoService {
     });
   }
 
-  /*public async uploadFile(file: File): Promise<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return axios.post(`${baseApiUrl}/subir`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  }*/
-
   public async uploadFile(file: File): Promise<IArchivoAdjunto> {
     const formData = new FormData();
     formData.append('file', file);
