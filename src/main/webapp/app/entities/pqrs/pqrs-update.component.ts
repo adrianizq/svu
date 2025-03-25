@@ -81,28 +81,7 @@ export default defineComponent({
       try {
         console.log('Iniciando subida de archivos...'); // Debug
         const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
-        //archivosAdjuntosDTO.value = uploadResponse; // Guardar los archivos subidos (con sus IDs)
-
-        /**"archivosAdjuntosDTO": [
-    {
-      "id": "67e096e62001c17ac7b2a8c8",
-      "nombre": "archivosAjuntosFlujo",
-      "tipo": "application/octet-stream",
-      "urlArchivo": "uploads/archivosAjuntosFlujo",
-      "fechaSubida": "2025-03-23T23:19:02.342Z"
-    }
-  ] */
-
-        // 2️⃣ Asignar los archivos subidos a la PQRS como referencias DBRef
-        if (pqrs && uploadResponse.length > 0) {
-          pqrs.archivosAdjuntosDTO = uploadResponse.map(file => ({
-            id: file.id, // Suponiendo que `file.id` es un string o ObjectId
-            nombre: file.nombre, // Ajusta según la estructura real de IArchivoAdjunto
-            tipo: 'application/octet-stream',
-            url: file.urlArchivo, // Si hay una URL asociada al archivo
-            fechaSubida: '2025-03-23T23:19:02.342',
-          }));
-        }
+        archivosAdjuntosDTO.value = uploadResponse; // Guardar los archivos subidos (con sus IDs)
 
         console.log('Archivos subidos correctamente:', archivosAdjuntosDTO.value); // Debug
         successMessage.value = 'Archivos subidos correctamente';
@@ -214,11 +193,13 @@ export default defineComponent({
           await this.uploadFiles();
         }
 
-        //this.archivosAdjuntosDTODTO = this.archivosAdjuntosDTO;
+        this.pqrs.archivosAdjuntosDTO = this.archivosAdjuntosDTO;
 
-        console.log('Archivos asignados a PQRS:', this.pqrs.archivosAdjuntosDTO); // Debug
+        // this.pqrs.archivosAdjuntosDTO.value = this.archivosAdjuntosDTO.value;
 
-        console.log('llego hasta antes de uodate o guardar');
+        console.log('archivosAdjuntosDTO:', this.archivosAdjuntosDTO); // Debug
+
+        console.log('llego hasta antes de uodate o guardar la pqrs');
 
         // 3️⃣ Guardar la PQRS en la base de datos
         let savedPqrs;
