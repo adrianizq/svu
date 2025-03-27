@@ -200,20 +200,32 @@ public class ArchivoAdjuntoService {
     public ArchivoAdjuntoDTO saveFile(MultipartFile file) {
         // 1. Guardar archivo físicamente (tu código existente)
         Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
-        String fileName = file.getOriginalFilename();
-        // ... (código para guardar el archivo)
-
+        if (!Files.exists(rootLocation)) {
+            try {
+                Files.createDirectories(rootLocation);
+            } catch (IOException e) {
+                throw new RuntimeException("No se pudo crear el directorio", e);
+            }
+        }
         // 2. Crear y guardar la entidad
-        ArchivoAdjunto archivo = new ArchivoAdjunto()
+        String fileName = file.getOriginalFilename();
+        Path destinationPath = rootLocation.resolve(fileName);
+        try {
+            file.transferTo(destinationPath);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar el archivo", e);
+        }
+        // 3. Crear entidad con todos los campos
+        ArchivoAdjunto archivoAdjunto = new ArchivoAdjunto()
             .nombre(fileName)
             .tipo(file.getContentType())
             .urlArchivo("uploads/" + fileName)
             .fechaSubida(Instant.now());
-
-        archivo = archivoAdjuntoRepository.save(archivo); // Guarda en MongoDB
-
-        // 3. Convertir a DTO antes de retornar
-        return convertToDto(archivo);
+        // 4. Guardar en MongoDB y retornar el objeto completo
+        ArchivoAdjuntoDTO archivoAdjuntoDTO = convertToDto(archivoAdjunto);
+        archivoAdjunto = archivoAdjuntoRepository.save(archivoAdjunto);
+        archivoAdjuntoDTO = archivoAdjuntoMapper.toDto(archivoAdjunto);
+        return archivoAdjuntoDTO;
     }
 
     private ArchivoAdjuntoDTO convertToDto(ArchivoAdjunto archivo) {

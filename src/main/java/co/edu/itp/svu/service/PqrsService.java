@@ -162,28 +162,38 @@ public class PqrsService {
     }
 
     public PqrsDTO create(PqrsDTO pqrsDTO) {
+        // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        // Asociar archivos adjuntos a la PQRS usando sus IDs
-        if (pqrsDTO.getArchivosAdjuntosDTO() != null && !pqrsDTO.getArchivosAdjuntosDTO().isEmpty()) {
-            Set<String> archivosAdjuntosIds = pqrsDTO
+
+        // 2. Procesar archivos adjuntos (convertir DTOs a entidades)
+        if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
+            Set<ArchivoAdjunto> archivosAdjuntos = pqrsDTO
                 .getArchivosAdjuntosDTO()
                 .stream()
-                .map(ArchivoAdjuntoDTO::getId)
+                .map(this::convertToEntity) // Método de conversión personalizado
                 .collect(Collectors.toSet());
 
-            // Recuperar los archivos adjuntos desde la base de datos
-            Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>(archivoAdjuntoRepository.findAllById(archivosAdjuntosIds));
-
-            // Verificar que se encontraron todos los archivos adjuntos
-            if (archivosAdjuntos.size() != archivosAdjuntosIds.size()) {
-                throw new RuntimeException("Algunos archivos adjuntos no fueron encontrados.");
-            }
-
-            // Asociar los archivos adjuntos a la PQRS
             pqrs.setArchivosAdjuntos(archivosAdjuntos);
         }
+
+        // 3. Guardar todo (incluye archivos adjuntos)
         pqrs = pqrsRepository.save(pqrs);
+
+        // 4. Retornar DTO con todos los datos
         return pqrsMapper.toDto(pqrs);
+    }
+
+    private ArchivoAdjunto convertToEntity(ArchivoAdjuntoDTO dto) {
+        ArchivoAdjunto archivo = new ArchivoAdjunto();
+        // Mapear todos los campos (no solo el ID)
+        archivo.setId(dto.getId());
+        archivo.setNombre(dto.getNombre());
+        archivo.setTipo(dto.getTipo());
+        archivo.setUrlArchivo(dto.getUrlArchivo());
+        archivo.setFechaSubida(dto.getFechaSubida());
+        // ... otros campos si existen
+
+        return archivo;
     }
 
     public PqrsDTO update(PqrsDTO pqrsDTO) {

@@ -83,7 +83,8 @@ export default defineComponent({
         const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
         archivosAdjuntosDTO.value = uploadResponse; // Guardar los archivos subidos (con sus IDs)
 
-        console.log('Archivos subidos correctamente:', archivosAdjuntosDTO.value); // Debug
+        //console.log('Archivos subidos correctamente:', archivosAdjuntosDTO.value); // Debug
+        console.log('Archivos subidos correctamente:', uploadResponse.values); // Debug
         successMessage.value = 'Archivos subidos correctamente';
       } catch (error) {
         console.error('Error subiendo archivos:', error); // Debug
