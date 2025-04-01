@@ -34,6 +34,8 @@ export default defineComponent({
     const pqrs: Ref<IPqrs> = ref(new Pqrs());
     const oficinas: Ref<IOficina[]> = ref([]);
     let isSaving = ref(false);
+
+    const input = ref(null);
     const currentLanguage = inject('currentLanguage', () => computed(() => navigator.language ?? 'es'), true);
 
     const route = useRoute();
@@ -60,9 +62,9 @@ export default defineComponent({
 
     // Método para manejar la selección de archivos
     const onFileChange = (event: Event) => {
-      const input = event.target as HTMLInputElement;
-      if (input.files && input.files.length > 0) {
-        const newFiles = Array.from(input.files); // Convertir FileList a array
+      input.value = event.target as HTMLInputElement;
+      if (input.value.files && input.value.files.length > 0) {
+        const newFiles = Array.from(input.value.files); // Convertir FileList a array
         files.value = [...files.value, ...newFiles]; // Agregar nuevos archivos a la lista
       }
     };
@@ -105,6 +107,8 @@ export default defineComponent({
         // Si la PQRS ya tiene archivos adjuntos, cargarlos
         if (res.archivosAdjuntosDTO) {
           archivosAdjuntosDTO.value = res.archivosAdjuntosDTO;
+
+          files.value = res.archivosAdjuntosDTO.map(v => ({ name: v.nombre }));
         }
 
         pqrs.value = res;
@@ -153,6 +157,7 @@ export default defineComponent({
     v$.value.$validate();
 
     return {
+      input,
       pqrsService,
       alertService,
       pqrs,
