@@ -24,9 +24,8 @@ public class V002_AddFunctionaryAuthorityWithUser {
 
     @Execution
     public void addFunctionaryRole() {
-        String functionaryRoleName = AuthoritiesConstants.FUNCTIONARY; // Usa la constante FUNCTIONARY
+        String functionaryRoleName = AuthoritiesConstants.FUNCTIONARY;
 
-        // Verificar si el rol ya existe
         Query query = Query.query(Criteria.where("name").is(functionaryRoleName));
         boolean exists = mongoTemplate.exists(query, Authority.class);
 
@@ -43,7 +42,7 @@ public class V002_AddFunctionaryAuthorityWithUser {
     @RollbackExecution
     public void rollback() {
         String functionaryRoleName = AuthoritiesConstants.FUNCTIONARY;
-        // Encuentra y elimina el rol específico
+
         Query query = Query.query(Criteria.where("name").is(functionaryRoleName));
         mongoTemplate.remove(query, Authority.class);
         log.info("Rolled back (removed) Authority: {}", functionaryRoleName);
