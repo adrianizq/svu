@@ -22,14 +22,14 @@ export default class UserManagementService {
   public retrieve(req?: any): Promise<any> {
     return axios.get(`api/admin/users?${buildPaginationQueryOpts(req)}`);
   }
-  /*
+
   public retrieveAuthorities(): Promise<any> {
     return axios.get('api/authorities').then(response => {
       response.data = response.data.map(authority => authority.name);
       return response;
     });
   }
-  */
+
   //////////////////////////////////////////Modificaciones aqui
   public retrieveAll(req?: any): Promise<any> {
     return axios.get(`api/admin/users`);
