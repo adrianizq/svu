@@ -37,7 +37,7 @@ public class V003_InitialSetupOffice {
         User responsableUser = mongoTemplate.findOne(adminUserQuery, User.class, USER_COLLECTION_NAME);
 
         if (responsableUser == null) {
-            log.error("Migration 'insert-initial-oficinas' failed: User 'admin' not found.");
+            log.error("Migration 'v003-initial-setup-office' failed: User 'admin' not found.");
             throw new RuntimeException("Required 'admin' user not found for Oficina migration.");
         } else {
             log.info("Found responsible user: {}", responsableUser.getLogin());
@@ -45,55 +45,55 @@ public class V003_InitialSetupOffice {
 
         List<Oficina> officesToInsert = new ArrayList<>();
 
-        Oficina rectoria = new Oficina();
-        rectoria.setNombre("Rectoría");
-        rectoria.setDescripcion("Oficina principal de la institución.");
-        rectoria.setNivel("1");
-        rectoria.setOficinaSuperior("Consejo");
-        rectoria.setResponsable(responsableUser);
-        rectoria.setPqrsList(new ArrayList<>());
-        officeNames.add(rectoria.getNombre());
-        officesToInsert.add(rectoria);
+        Oficina rectory = new Oficina();
+        rectory.setNombre("Rectoría");
+        rectory.setDescripcion("Oficina principal de la institución.");
+        rectory.setNivel("1");
+        rectory.setOficinaSuperior("Consejo");
+        rectory.setResponsable(responsableUser);
+        rectory.setPqrsList(new ArrayList<>());
+        officeNames.add(rectory.getNombre());
+        officesToInsert.add(rectory);
 
-        Oficina vicerrectoriaAcademica = new Oficina();
-        vicerrectoriaAcademica.setNombre("Vicerrectoría Académica");
-        vicerrectoriaAcademica.setDescripcion("Coordina las actividades académicas.");
-        vicerrectoriaAcademica.setNivel("2");
-        vicerrectoriaAcademica.setOficinaSuperior("Rectoría");
-        vicerrectoriaAcademica.setResponsable(responsableUser);
-        vicerrectoriaAcademica.setPqrsList(new ArrayList<>());
-        officeNames.add(vicerrectoriaAcademica.getNombre());
-        officesToInsert.add(vicerrectoriaAcademica);
+        Oficina AcademicViceRectorate = new Oficina();
+        AcademicViceRectorate.setNombre("Vicerrectoría Académica");
+        AcademicViceRectorate.setDescripcion("Coordina las actividades académicas.");
+        AcademicViceRectorate.setNivel("2");
+        AcademicViceRectorate.setOficinaSuperior("Rectoría");
+        AcademicViceRectorate.setResponsable(responsableUser);
+        AcademicViceRectorate.setPqrsList(new ArrayList<>());
+        officeNames.add(AcademicViceRectorate.getNombre());
+        officesToInsert.add(AcademicViceRectorate);
 
-        Oficina secretariaGeneral = new Oficina();
-        secretariaGeneral.setNombre("Secretaría General");
-        secretariaGeneral.setDescripcion("Administra documentos y procesos formales.");
-        secretariaGeneral.setNivel("2");
-        secretariaGeneral.setOficinaSuperior("Rectoría");
-        secretariaGeneral.setResponsable(responsableUser);
-        secretariaGeneral.setPqrsList(new ArrayList<>());
-        officeNames.add(secretariaGeneral.getNombre());
-        officesToInsert.add(secretariaGeneral);
+        Oficina generalsecretary = new Oficina();
+        generalsecretary.setNombre("Secretaría General");
+        generalsecretary.setDescripcion("Administra documentos y procesos formales.");
+        generalsecretary.setNivel("2");
+        generalsecretary.setOficinaSuperior("Rectoría");
+        generalsecretary.setResponsable(responsableUser);
+        generalsecretary.setPqrsList(new ArrayList<>());
+        officeNames.add(generalsecretary.getNombre());
+        officesToInsert.add(generalsecretary);
 
-        Oficina admisiones = new Oficina();
-        admisiones.setNombre("Oficina de Admisiones y Registro");
-        admisiones.setDescripcion("Gestiona el ingreso y registro de estudiantes.");
-        admisiones.setNivel("3");
-        admisiones.setOficinaSuperior("Vicerrectoría Académica");
-        admisiones.setResponsable(responsableUser);
-        admisiones.setPqrsList(new ArrayList<>());
-        officeNames.add(admisiones.getNombre());
-        officesToInsert.add(admisiones);
+        Oficina admissions = new Oficina();
+        admissions.setNombre("Oficina de Admisión y Registro");
+        admissions.setDescripcion("Gestiona el ingreso y registro de estudiantes.");
+        admissions.setNivel("3");
+        admissions.setOficinaSuperior("Vicerrectoría Académica");
+        admissions.setResponsable(responsableUser);
+        admissions.setPqrsList(new ArrayList<>());
+        officeNames.add(admissions.getNombre());
+        officesToInsert.add(admissions);
 
-        Oficina Ciecyt = new Oficina();
-        Ciecyt.setNombre("Cetro de Investigación");
-        Ciecyt.setDescripcion("maneja las investigaciones.");
-        Ciecyt.setNivel("3");
-        Ciecyt.setOficinaSuperior("Rectoría");
-        Ciecyt.setResponsable(responsableUser);
-        Ciecyt.setPqrsList(new ArrayList<>());
-        officeNames.add(secretariaGeneral.getNombre());
-        officesToInsert.add(Ciecyt);
+        Oficina ciecyt = new Oficina();
+        ciecyt.setNombre("Cetro de Investigación");
+        ciecyt.setDescripcion("maneja las investigaciones.");
+        ciecyt.setNivel("3");
+        ciecyt.setOficinaSuperior("Rectoría");
+        ciecyt.setResponsable(responsableUser);
+        ciecyt.setPqrsList(new ArrayList<>());
+        officeNames.add(ciecyt.getNombre());
+        officesToInsert.add(ciecyt);
 
         if (!officesToInsert.isEmpty()) {
             try {
