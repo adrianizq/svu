@@ -111,7 +111,7 @@ public class V003_InitialSetupOffice {
 
     @RollbackExecution
     public void rollback() {
-        log.warn("Executing rollback for migration: insert-initial-oficinas");
+        log.warn("Executing rollback for migration: v003-initial-setup-office");
 
         if (!officeNames.isEmpty()) {
             Query rollbackQuery = new Query(Criteria.where("nombre").in(officeNames));
