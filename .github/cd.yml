@@ -1,0 +1,94 @@
+name: Build docker SVU image and deploy to VM
+
+on:
+  release:
+    types: [published]
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/itp-svu
+
+  # Define the region and instance name for GCP VM
+  GCP_PROJECT_ID: your-gcp-project-id # Optional, useful if using GCP actions
+  GCP_ZONE: your-vm-zone # e.g., us-central1-a
+  GCP_INSTANCE_NAME: your-vm-instance-name
+
+jobs:
+  build-and-push:
+    name: Generate Docker image and push to Registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 # Or the version your project uses
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin' # Or 'zulu', 'adopt', etc.
+          cache: 'maven' # Or 'gradle' if you use Gradle
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }} # Use a PAT (Personal Access Token)
+
+      - name: Build and Push Docker image with Jib (Maven)
+        # Make sure Jib is configured in your pom.xml to use env.IMAGE_NAME
+        # Example: <image>${env.IMAGE_NAME}:${env.GITHUB_SHA}</image>
+        # Or pass via command line: -Djib.to.image=${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: mvn compile com.google.cloud.tools:jib-maven-plugin:3.4.1:build -Djib.to.tags=${{ github.sha }},latest
+        # The tag uses the Git SHA for precise versioning, and also 'latest'
+
+      # --- OR ---
+
+      # - name: Build and Push Docker image with Jib (Gradle)
+      #   # Make sure Jib is configured in your build.gradle or build.gradle.kts
+      #   # Example (build.gradle.kts): jib.to.image = "${System.getenv("IMAGE_NAME")}:${System.getenv("GITHUB_SHA")}"
+      #   # Or pass via command line: -Djib.to.image=${{ env.IMAGE_NAME }}:${{ github.sha }}
+      #   run: ./gradlew jib -Djib.to.tags=${{ github.sha }},latest --no-daemon
+      #   # The tag uses the Git SHA for precise versioning, and also 'latest'
+
+      - name: Print Image Details
+        run: echo "Pushed image ${{ env.IMAGE_NAME }}:${{ github.sha }} and :latest"
+
+  deploy-to-vm:
+    name: Deploy app to GCP VM via SSH
+    needs: build-and-push # Run only after build-and-push succeeds
+    runs-on: ubuntu-latest
+    steps:
+      # Option 1: Standard SSH Action (Recommended based on your description)
+      - name: Deploy to VM using SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_VM_HOST }} # External IP of your VM
+          username: ${{ secrets.GCP_VM_USER }} # SSH username for the VM
+          key: ${{ secrets.GCP_VM_SSH_KEY }} # Your private SSH key
+          port: 22 # Default SSH port
+          script: |
+            # Navigate to the directory where your docker-compose files are
+            cd /path/to/your/app/deployment/files
+
+            # Log in to Docker Hub (optional, needed if the image is private)
+            # Ensure DOCKERHUB_USERNAME and DOCKERHUB_TOKEN are set as environment variables on the VM
+            # Or pass them securely if needed, e.g., via SSH command arguments (less secure)
+            # echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+
+            # Pull the specific image version built in the previous job
+            docker pull ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+            # Update the image tag in your app.yml if necessary (RECOMMENDED)
+            # This assumes your app.yml uses an environment variable or placeholder for the tag
+            export APP_IMAGE_TAG=${{ github.sha }}
+            # Example using sed to replace a placeholder tag:
+            # sed -i 's|image: ${{ env.IMAGE_NAME }}:.*|image: ${{ env.IMAGE_NAME }}:${{ github.sha }}|g' app.yml
+
+            # Stop and remove old containers, then start new ones using app.yml
+            # Use -f flag to specify your compose file name if it's not docker-compose.yml
+            # Ensure Docker Compose v2 (docker compose) is installed. Use docker-compose if using v1.
+            docker compose -f app.yml down
+            docker compose -f app.yml pull # Pulls images defined in the compose file, ensuring latest dependencies if any
+            docker compose -f app.yml up -d --remove-orphans # Start in detached mode, remove unused containers
+
+            # Optional: Clean up old, unused Docker images to save space
+            docker image prune -af
