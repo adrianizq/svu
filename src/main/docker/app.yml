@@ -3,6 +3,9 @@ name: ventanillaunica
 services:
   app:
     image: ventanillaunica
+    volumes:
+      - /home/adrian/Adr/svufiles:/home/adrian/Adr/svufiles
+
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=prod,api-docs
