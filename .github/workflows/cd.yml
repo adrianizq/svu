@@ -2,7 +2,7 @@ name: Build docker SVU image and deploy to VM
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize, reopened]
   #release:
   #types: [published]
 
