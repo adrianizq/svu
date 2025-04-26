@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            cd /~/svu/
+            cd ~/svu/
 
             docker pull ${{ env.IMAGE_NAME }}:latest
 
