@@ -7,7 +7,6 @@ services:
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:27017:27017
-    # Test of data persist with volume
     volumes:
       - ~/svu/mongodb_data:/data/db
 
