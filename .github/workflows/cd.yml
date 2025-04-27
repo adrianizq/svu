@@ -1,10 +1,8 @@
 name: Build docker SVU image and deploy to VM
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  #release:
-  #types: [published]
+  release:
+    types: [published]
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/itp-svu
