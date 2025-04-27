@@ -159,7 +159,7 @@ public class OficinaService {
                 throw new IllegalArgumentException("Error al mapear OficinaDTO a Oficina");
             }
 
-            oficina.setResponsable(responsable.get()); // Asociar el User como responsable
+            oficina.setResponsable(responsable.orElseThrow()); // Asociar el User como responsable
             oficina = oficinaRepository.save(oficina);
         } catch (Exception e) {
             LOG.error("Error al guardar la oficina: {}", e.getMessage());
@@ -177,14 +177,14 @@ public class OficinaService {
         Optional<Oficina> oficinaOptional = oficinaRepository.findById(oficinaDTO.getId());
         if (oficinaOptional.isPresent()) {
             String usernameResponsable = oficinaDTO.getResponsableDTO().getLogin();
-            oficina = oficinaOptional.get();
+            oficina = oficinaOptional.orElseThrow();
             oficina.setNombre(oficinaDTO.getNombre());
             oficina.setOficinaSuperior(oficinaDTO.getOficinaSuperior());
             oficina.setDescripcion(oficinaDTO.getDescripcion());
             oficina.setNivel(oficinaDTO.getNivel());
             Optional<User> responsable = userService.getUserWithAuthoritiesByLogin(usernameResponsable);
             if (responsable.isPresent()) {
-                oficina.setResponsable(responsable.get());
+                oficina.setResponsable(responsable.orElseThrow());
                 oficina = oficinaRepository.save(oficina);
                 return oficinaMapper.toDto(oficina);
             } else {
@@ -200,7 +200,7 @@ public class OficinaService {
         Optional<Oficina> oficinaOpt = oficinaRepository.findById(id);
 
         if (oficinaOpt.isPresent()) {
-            Oficina oficina = oficinaOpt.get(); // Obtener la oficina
+            Oficina oficina = oficinaOpt.orElseThrow(); // Obtener la oficina
             List<Pqrs> allPqrs = pqrsRepository.findByOficinaResponder_Id(id); // Obtener todas las PQRS
 
             // Filtrar y agregar PQRS que pertenecen a esta oficina
@@ -219,8 +219,8 @@ public class OficinaService {
         Optional<Oficina> oficinaOpt = Optional.ofNullable(oficinaRepository.findByResponsable_Id(id));
 
         if (oficinaOpt.isPresent()) {
-            Oficina oficina = oficinaOpt.get(); // Obtener la oficina
-            List<Pqrs> allPqrs = pqrsRepository.findByOficinaResponder_Id(oficinaOpt.get().getId()); // Obtener todas las PQRS
+            Oficina oficina = oficinaOpt.orElseThrow(); // Obtener la oficina
+            List<Pqrs> allPqrs = pqrsRepository.findByOficinaResponder_Id(oficinaOpt.orElseThrow().getId()); // Obtener todas las PQRS
 
             // Filtrar y agregar PQRS que pertenecen a esta oficina
             for (Pqrs pqrs : allPqrs) {
@@ -237,12 +237,12 @@ public class OficinaService {
     public Optional<OficinaDTO> getOficinaUserLogin(String login) {
         String loginUser;
         Optional<User> user = userService.getUserByLogin(login);
-        if (user.get() != null) {
-            Optional<Oficina> oficinaOpt = Optional.ofNullable(oficinaRepository.findByResponsable_Id(user.get().getId()));
+        if (user.orElseThrow() != null) {
+            Optional<Oficina> oficinaOpt = Optional.ofNullable(oficinaRepository.findByResponsable_Id(user.orElseThrow().getId()));
 
             if (oficinaOpt.isPresent()) {
-                Oficina oficina = oficinaOpt.get(); // Obtener la oficina
-                List<Pqrs> allPqrs = pqrsRepository.findByOficinaResponder_Id(oficinaOpt.get().getId()); // Obtener todas las PQRS
+                Oficina oficina = oficinaOpt.orElseThrow(); // Obtener la oficina
+                List<Pqrs> allPqrs = pqrsRepository.findByOficinaResponder_Id(oficinaOpt.orElseThrow().getId()); // Obtener todas las PQRS
 
                 // Filtrar y agregar PQRS que pertenecen a esta oficina
                 for (Pqrs pqrs : allPqrs) {
@@ -254,7 +254,7 @@ public class OficinaService {
             }
         }
         Optional<Oficina> of = Optional.of(new Oficina());
-        of.get().setId("");
+        of.orElseThrow().setId("");
         return of.map(oficinaMapper::toDto);
     }
 }
