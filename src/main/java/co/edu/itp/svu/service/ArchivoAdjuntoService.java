@@ -197,7 +197,7 @@ public class ArchivoAdjuntoService {
         }
     }
 
-    public ArchivoAdjuntoDTO saveFile(MultipartFile file) {
+    public ArchivoAdjuntoDTO saveFile(MultipartFile file, String pqrs_id) {
         // 1. Guardar archivo físicamente (tu código existente)
         Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
         if (!Files.exists(rootLocation)) {
@@ -219,7 +219,7 @@ public class ArchivoAdjuntoService {
         ArchivoAdjunto archivoAdjunto = new ArchivoAdjunto()
             .nombre(fileName)
             .tipo(file.getContentType())
-            .urlArchivo("uploads/" + fileName)
+            .urlArchivo("uploads/" + pqrs_id + "_" + fileName)
             .fechaSubida(Instant.now());
         // 4. Guardar en MongoDB y retornar el objeto completo
         ArchivoAdjuntoDTO archivoAdjuntoDTO = convertToDto(archivoAdjunto);

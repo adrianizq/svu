@@ -227,10 +227,13 @@ public class ArchivoAdjuntoResource {
             .collect(Collectors.toList());
     }*/
     @PostMapping("/upload")
-    public List<ArchivoAdjuntoDTO> handleFileUpload(@RequestParam("files") List<MultipartFile> files) {
+    public List<ArchivoAdjuntoDTO> handleFileUpload(
+        @RequestParam("files") List<MultipartFile> files,
+        @RequestParam("pqrs_id") String pqrs_id
+    ) {
         return files
             .stream()
-            .map(archivoAdjuntoService::saveFile) // Ahora saveFile retorna DTO
+            .map(file -> archivoAdjuntoService.saveFile(file, pqrs_id)) // Ahora saveFile retorna DTO
             .collect(Collectors.toList());
     }
 }

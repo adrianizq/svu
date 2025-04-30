@@ -103,11 +103,13 @@ export default class ArchivoAdjuntoService {
   }
 
   // Método para subir archivos
-  public uploadFiles(files: File[]): Promise<string[]> {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
-    });
+  public uploadFiles(formData: FormData): Promise<string[]> {
+    // const formData = new FormData();
+    // files.forEach(file => {
+    //   formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
+    // });
+
+    //formData.append('pqrs_id', pqrs_id);
 
     return new Promise<string[]>((resolve, reject) => {
       axios
