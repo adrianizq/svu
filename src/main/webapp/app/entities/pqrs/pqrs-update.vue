@@ -54,7 +54,6 @@
                 class="form-control"
                 name="fechaCreacion"
                 :class="{ valid: !v$.fechaCreacion.$invalid, invalid: v$.fechaCreacion.$invalid }"
-                required
                 :value="convertDateTimeFromServer(v$.fechaCreacion.$model)"
                 @change="updateInstantField('fechaCreacion', $event)"
               />

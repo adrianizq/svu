@@ -144,9 +144,7 @@ export default defineComponent({
       descripcion: {
         required: validations.required(t$('entity.validation.required').toString()),
       },
-      fechaCreacion: {
-        required: validations.required(t$('entity.validation.required').toString()),
-      },
+      fechaCreacion: {},
       fechaLimiteRespuesta: {},
       estado: {
         required: validations.required(t$('entity.validation.required').toString()),
