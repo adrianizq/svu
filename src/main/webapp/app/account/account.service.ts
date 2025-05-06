@@ -65,6 +65,14 @@ export default class AccountService {
     return this.checkAuthorities(authorities);
   }
 
+  public hasAnyAuthoritySync(authorities: string | string[]): boolean {
+    if (!this.authenticated) return false;
+    if (typeof authorities === 'string') {
+      authorities = [authorities];
+    }
+    return this.checkAuthorities(authorities);
+  }
+
   public get authenticated(): boolean {
     return this.store.authenticated;
   }
