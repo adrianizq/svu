@@ -12,6 +12,10 @@ import co.edu.itp.svu.service.dto.PqrsDTO;
 import co.edu.itp.svu.service.mapper.ArchivoAdjuntoMapper;
 import co.edu.itp.svu.service.mapper.OficinaMapper;
 import co.edu.itp.svu.service.mapper.PqrsMapper;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -164,6 +168,17 @@ public class PqrsService {
     public PqrsDTO create(PqrsDTO pqrsDTO) {
         // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
+        pqrs.setEstado("Pendiente");
+
+        Instant globalCurrentDate = Instant.now();
+        pqrs.setFechaCreacion(globalCurrentDate);
+        ZoneId zoneSystem = ZoneId.systemDefault();
+        LocalDateTime currentDate = LocalDateTime.ofInstant(globalCurrentDate, zoneSystem);
+        LocalDateTime dueDate = currentDate.plusDays(15);
+        pqrs.setFechaLimiteRespuesta(dueDate);
+
+        Oficina office = oficinaRepository.findByNombre("Secretaría General");
+        pqrs.setOficinaResponder(office);
 
         // 2. Procesar archivos adjuntos (convertir DTOs a entidades)
         if (pqrsDTO.getArchivosAdjuntosDTO() != null) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.data.annotation.Id;
@@ -30,12 +31,11 @@ public class Pqrs implements Serializable {
     @Field("descripcion")
     private String descripcion;
 
-    @NotNull
     @Field("fecha_creacion")
     private Instant fechaCreacion;
 
     @Field("fecha_limite_respuesta")
-    private Instant fechaLimiteRespuesta;
+    private LocalDateTime fechaLimiteRespuesta;
 
     @NotNull
     @Field("estado")
@@ -105,16 +105,16 @@ public class Pqrs implements Serializable {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public Instant getFechaLimiteRespuesta() {
+    public LocalDateTime getFechaLimiteRespuesta() {
         return this.fechaLimiteRespuesta;
     }
 
-    public Pqrs fechaLimiteRespuesta(Instant fechaLimiteRespuesta) {
+    public Pqrs fechaLimiteRespuesta(LocalDateTime fechaLimiteRespuesta) {
         this.setFechaLimiteRespuesta(fechaLimiteRespuesta);
         return this;
     }
 
-    public void setFechaLimiteRespuesta(Instant fechaLimiteRespuesta) {
+    public void setFechaLimiteRespuesta(LocalDateTime fechaLimiteRespuesta) {
         this.fechaLimiteRespuesta = fechaLimiteRespuesta;
     }
 

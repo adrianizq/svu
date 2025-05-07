@@ -14,6 +14,7 @@ import co.edu.itp.svu.service.dto.PqrsDTO;
 import co.edu.itp.svu.service.mapper.PqrsMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -42,8 +43,8 @@ class PqrsResourceIT {
     private static final Instant DEFAULT_FECHA_CREACION = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_FECHA_CREACION = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
-    private static final Instant DEFAULT_FECHA_LIMITE_RESPUESTA = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_FECHA_LIMITE_RESPUESTA = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final LocalDateTime DEFAULT_FECHA_LIMITE_RESPUESTA = LocalDateTime.now();
+    private static final LocalDateTime UPDATED_FECHA_LIMITE_RESPUESTA = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
     private static final String DEFAULT_ESTADO = "AAAAAAAAAA";
     private static final String UPDATED_ESTADO = "BBBBBBBBBB";
