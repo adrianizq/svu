@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-dropdown-item to="/oficina">
+    <b-dropdown-item v-if="isAdmin" to="/oficina">
       <font-awesome-icon icon="asterisk" />
       <span v-text="t$('global.menu.entities.oficina')"></span>
     </b-dropdown-item>
@@ -12,7 +12,7 @@
       <font-awesome-icon icon="asterisk" />
       <span v-text="t$('global.menu.entities.respuesta')"></span>
     </b-dropdown-item>
-    <b-dropdown-item to="/archivo-adjunto">
+    <b-dropdown-item v-if="isAdmin" to="/archivo-adjunto">
       <font-awesome-icon icon="asterisk" />
       <span v-text="t$('global.menu.entities.archivoAdjunto')"></span>
     </b-dropdown-item>
@@ -20,7 +20,7 @@
       <font-awesome-icon icon="asterisk" />
       <span v-text="t$('global.menu.entities.notificacion')"></span>
     </b-dropdown-item>
-    <b-dropdown-item to="/informe-pqrs">
+    <b-dropdown-item v-if="isAdmin" to="/informe-pqrs">
       <font-awesome-icon icon="asterisk" />
       <span v-text="t$('global.menu.entities.informePqrs')"></span>
     </b-dropdown-item>
