@@ -92,7 +92,6 @@
               data-cy="estado"
               :class="{ valid: !v$.estado.$invalid, invalid: v$.estado.$invalid }"
               v-model="v$.estado.$model"
-              required
             />
             <div v-if="v$.estado.$anyDirty && v$.estado.$invalid">
               <small class="form-text text-danger" v-for="error of v$.estado.$errors" :key="error.$uid">{{ error.$message }}</small>

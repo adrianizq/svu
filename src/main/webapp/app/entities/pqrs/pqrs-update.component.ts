@@ -146,9 +146,7 @@ export default defineComponent({
       },
       fechaCreacion: {},
       fechaLimiteRespuesta: {},
-      estado: {
-        required: validations.required(t$('entity.validation.required').toString()),
-      },
+      estado: {},
       oficinaResponder: {},
     };
     const v$ = useVuelidate(validationRules, pqrs as any);
