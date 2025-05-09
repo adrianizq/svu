@@ -7,10 +7,12 @@ import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.service.mapper.ArchivoAdjuntoMapper;
 import co.edu.itp.svu.service.util.FileUtils;
 import co.edu.itp.svu.service.util.MimeTypes;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,15 +20,21 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 /**
  * Service Implementation for managing {@link co.edu.itp.svu.domain.ArchivoAdjunto}.
@@ -44,11 +52,15 @@ public class ArchivoAdjuntoService {
 
     private final ApplicationProperties appProperties;
 
+    // Ruta base donde se guardarán los archivos (podría venir de application.properties)
+    @Value("${app.file.upload-dir:/home/adrian/Adr/svufiles/}")
+    private String uploadDir;
+
     public ArchivoAdjuntoService(
         ArchivoAdjuntoRepository archivoAdjuntoRepository,
         ArchivoAdjuntoMapper archivoAdjuntoMapper,
         ApplicationProperties appProperties
-    ) {
+    ) { // Cambiado a FileStore
         this.archivoAdjuntoRepository = archivoAdjuntoRepository;
         this.archivoAdjuntoMapper = archivoAdjuntoMapper;
         this.appProperties = appProperties;
@@ -200,6 +212,12 @@ public class ArchivoAdjuntoService {
     public ArchivoAdjuntoDTO saveFile(MultipartFile file, String pqrs_id) {
         // 1. Guardar archivo físicamente (tu código existente)
         Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
+
+        // Generar nombre único
+        String nombreOriginal = Objects.requireNonNull(file.getOriginalFilename());
+        String extension = nombreOriginal.substring(nombreOriginal.lastIndexOf('.'));
+        String nombreUnico = nombreOriginal + "_" + UUID.randomUUID() + extension;
+        Path rutaArchivo = rootLocation.resolve(nombreUnico);
         if (!Files.exists(rootLocation)) {
             try {
                 Files.createDirectories(rootLocation);
@@ -208,18 +226,20 @@ public class ArchivoAdjuntoService {
             }
         }
         // 2. Crear y guardar la entidad
-        String fileName = file.getOriginalFilename();
-        Path destinationPath = rootLocation.resolve(fileName);
+        // String fileName = file.getOriginalFilename();
+        // Path destinationPath = rootLocation.resolve(fileName);
         try {
-            file.transferTo(destinationPath);
+            //file.transferTo(destinationPath);
+            file.transferTo(rutaArchivo);
         } catch (IOException e) {
             throw new RuntimeException("Error al guardar el archivo", e);
         }
         // 3. Crear entidad con todos los campos
         ArchivoAdjunto archivoAdjunto = new ArchivoAdjunto()
-            .nombre(fileName)
+            .nombre(nombreOriginal)
             .tipo(file.getContentType())
-            .urlArchivo("uploads/" + pqrs_id + "_" + fileName)
+            //.urlArchivo("uploads/" + pqrs_id + "_" + nombreOriginal)
+            .urlArchivo(nombreUnico)
             .fechaSubida(Instant.now());
         // 4. Guardar en MongoDB y retornar el objeto completo
         ArchivoAdjuntoDTO archivoAdjuntoDTO = convertToDto(archivoAdjunto);

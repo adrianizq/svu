@@ -234,7 +234,7 @@ public class PqrsResource {
     */
     // Crear una nueva PQRS
     @PostMapping
-    public ResponseEntity<PqrsDTO> createPqrs(@RequestBody PqrsDTO pqrsDTO) {
+    public ResponseEntity<PqrsDTO> createPqrs(@RequestBody PqrsDTO pqrsDTO) throws IOException {
         LOG.debug("REST request to save Pqrs: {}", pqrsDTO);
         PqrsDTO result = pqrsService.create(pqrsDTO);
         return ResponseEntity.ok(result);
