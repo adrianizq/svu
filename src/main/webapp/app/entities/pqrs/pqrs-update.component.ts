@@ -80,6 +80,8 @@ export default defineComponent({
         formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
       });
 
+      formData.append('pqrs_id', route.params.pqrsId as string);
+
       try {
         console.log('Iniciando subida de archivos...'); // Debug
         const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
