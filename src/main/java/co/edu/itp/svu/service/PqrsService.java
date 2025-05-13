@@ -71,12 +71,10 @@ public class PqrsService {
      */
     public Optional<PqrsDTO> partialUpdate(PqrsDTO pqrsDTO) {
         LOG.debug("Request to partially update Pqrs : {}", pqrsDTO);
-
         return pqrsRepository
             .findById(pqrsDTO.getId())
             .map(existingPqrs -> {
                 pqrsMapper.partialUpdate(existingPqrs, pqrsDTO);
-
                 return existingPqrs;
             })
             .map(pqrsRepository::save)
@@ -92,7 +90,6 @@ public class PqrsService {
     public Page<PqrsDTO> findAll(String state, String idOffice, LocalDate date, Pageable pageable) {
         LOG.debug("Request to get all Pqrs");
         boolean isIdOfficeProvided = idOffice != null && !idOffice.trim().isEmpty();
-        System.out.println("fecha recibida " + date);
         if ("closed".equals(state) && !isIdOfficeProvided) {
             return pqrsRepository.findAllByEstadoNotAndFechaCreacionLessThanEqual(state, date, pageable).map(pqrsMapper::toDto);
         } else if (!"closed".equals(state) && !isIdOfficeProvided) {
@@ -138,21 +135,16 @@ public class PqrsService {
      */
     public Page<PqrsDTO> findAllOficina(Pageable pageable) {
         LOG.debug("Request to get all Pqrs");
-
         Page<Pqrs> pqrsPage = pqrsRepository.findAll(pageable);
-
         return pqrsPage.map(pqrs -> {
             PqrsDTO dto = pqrsMapper.toDto(pqrs);
-
             // Obtener la oficina
             Optional<Oficina> oficinaOpt = this.oficinaRepository.findById(dto.getOficinaResponder().getId());
-
             // Si la oficina existe, mapearla a OficinaDTO y establecerla en el DTO de Pqrs
             oficinaOpt.ifPresent(oficina -> {
                 OficinaDTO oficinaDTO = oficinaMapper.toDto(oficina); //mapper para Oficina
                 dto.setOficinaResponder(oficinaDTO); // Establecer la oficinaDTO en el DTO
             });
-
             return dto;
         });
     }
@@ -163,16 +155,13 @@ public class PqrsService {
             .findById(id)
             .map(pqrs -> {
                 PqrsDTO dto = pqrsMapper.toDto(pqrs);
-
                 // Obtener la oficina
                 Optional<Oficina> oficinaOpt = this.oficinaRepository.findById(dto.getOficinaResponder().getId());
-
                 // Si la oficina existe, mapearla a OficinaDTO y establecerla en el DTO de Pqrs
                 oficinaOpt.ifPresent(oficina -> {
                     OficinaDTO oficinaDTO = oficinaMapper.toDto(oficina); // Mapper para Oficina
                     dto.setOficinaResponder(oficinaDTO); // Establecer la oficinaDTO en el DTO
                 });
-
                 return dto;
             });
     }
@@ -197,17 +186,14 @@ public class PqrsService {
         // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         pqrs.setEstado("pendiente");
-
         Instant globalCurrentDate = Instant.now();
         pqrs.setFechaCreacion(globalCurrentDate);
         ZoneId zoneSystem = ZoneId.systemDefault();
         LocalDateTime currentDate = LocalDateTime.ofInstant(globalCurrentDate, zoneSystem);
         LocalDateTime dueDate = currentDate.plusDays(15);
         pqrs.setFechaLimiteRespuesta(dueDate);
-
         Oficina office = oficinaRepository.findByNombre("Secretaría General");
         pqrs.setOficinaResponder(office);
-
         // 2. Procesar archivos adjuntos (convertir DTOs a entidades)
         if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
             Set<ArchivoAdjunto> archivosAdjuntos = pqrsDTO
@@ -215,13 +201,11 @@ public class PqrsService {
                 .stream()
                 .map(this::convertToEntity) // Método de conversión personalizado
                 .collect(Collectors.toSet());
-
             pqrs.setArchivosAdjuntos(archivosAdjuntos);
         }
 
         // 3. Guardar todo (incluye archivos adjuntos)
         pqrs = pqrsRepository.save(pqrs);
-
         // 4. Retornar DTO con todos los datos
         return mapPqrsToDtoConOficina(pqrs);
         // return pqrsMapper.toDto(pqrs);

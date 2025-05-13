@@ -106,8 +106,8 @@ public class PqrsResource {
             date = LocalDate.now();
         }
         
-        LocalDate fechaLimite = date.plusDays(1);
-        Page<PqrsDTO> page = pqrsService.findAll(state, idOffice, fechaLimite, pageable);
+        LocalDate deadline = date.plusDays(1);
+        Page<PqrsDTO> page = pqrsService.findAll(state, idOffice, deadline, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

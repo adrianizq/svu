@@ -17,19 +17,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PqrsRepository extends MongoRepository<Pqrs, String> {
     List<Pqrs> findByOficinaResponder_Id(String oficinaId);
-    List<Pqrs> findByEstadoAndFechaCreacionLessThanEqual(String estado, LocalDate fecha, Pageable pageable);
-    Page<Pqrs> findAllByEstadoNotAndFechaCreacionLessThanEqual(String estado, LocalDate fecha, Pageable pageable);
-    Page<Pqrs> findAllByEstadoAndFechaCreacionLessThanEqual(String estado, LocalDate fecha, Pageable pageable);
+    List<Pqrs> findByEstadoAndFechaCreacionLessThanEqual(String state, LocalDate date, Pageable pageable);
+    Page<Pqrs> findAllByEstadoNotAndFechaCreacionLessThanEqual(String state, LocalDate date, Pageable pageable);
+    Page<Pqrs> findAllByEstadoAndFechaCreacionLessThanEqual(String state, LocalDate date, Pageable pageable);
     Page<Pqrs> findByEstadoNotAndOficinaResponder_IdAndFechaCreacionLessThanEqual(
-        String estado,
-        String oficinaId,
-        LocalDate fecha,
+        String state,
+        String officeId,
+        LocalDate date,
         Pageable pageable
     );
     Page<Pqrs> findByEstadoAndOficinaResponder_IdAndFechaCreacionLessThanEqual(
-        String estado,
-        String oficinaId,
-        LocalDate fecha,
+        String state,
+        String officeId,
+        LocalDate date,
         Pageable pageable
     );
 }
