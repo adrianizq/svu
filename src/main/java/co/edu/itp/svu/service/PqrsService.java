@@ -12,7 +12,9 @@ import co.edu.itp.svu.service.dto.PqrsDTO;
 import co.edu.itp.svu.service.mapper.ArchivoAdjuntoMapper;
 import co.edu.itp.svu.service.mapper.OficinaMapper;
 import co.edu.itp.svu.service.mapper.PqrsMapper;
+import java.io.Console;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -23,6 +25,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Service Implementation for managing {@link co.edu.itp.svu.domain.Pqrs}.
@@ -85,8 +89,23 @@ public class PqrsService {
      * @param pageable the pagination information.
      * @return the list of entities.
      */
-    public Page<PqrsDTO> findAll(Pageable pageable) {
+    public Page<PqrsDTO> findAll(String state, String idOffice, LocalDate date, Pageable pageable) {
         LOG.debug("Request to get all Pqrs");
+        boolean isIdOfficeProvided = idOffice != null && !idOffice.trim().isEmpty();
+        System.out.println("fecha recibida " + date);
+        if ("closed".equals(state) && !isIdOfficeProvided) {
+            return pqrsRepository.findAllByEstadoNotAndFechaCreacionLessThanEqual(state, date, pageable).map(pqrsMapper::toDto);
+        } else if (!"closed".equals(state) && !isIdOfficeProvided) {
+            return pqrsRepository.findAllByEstadoAndFechaCreacionLessThanEqual(state, date, pageable).map(pqrsMapper::toDto);
+        } else if ("closed".equals(state) && isIdOfficeProvided) {
+            return pqrsRepository
+                .findByEstadoNotAndOficinaResponder_IdAndFechaCreacionLessThanEqual(state, idOffice, date, pageable)
+                .map(pqrsMapper::toDto);
+        } else if (!"closed".equals(state) && isIdOfficeProvided) {
+            return pqrsRepository
+                .findByEstadoAndOficinaResponder_IdAndFechaCreacionLessThanEqual(state, idOffice, date, pageable)
+                .map(pqrsMapper::toDto);
+        }
         return pqrsRepository.findAll(pageable).map(pqrsMapper::toDto);
     }
 
@@ -158,11 +177,26 @@ public class PqrsService {
             });
     }
 
+    private PqrsDTO mapPqrsToDtoConOficina(Pqrs pqrs) {
+        PqrsDTO dto = pqrsMapper.toDto(pqrs);
+        // Asegurarse de que oficinaResponder y su ID no sean nulos antes de intentar obtenerla
+        if (pqrs.getOficinaResponder() != null && pqrs.getOficinaResponder().getId() != null) {
+            oficinaRepository
+                .findById(pqrs.getOficinaResponder().getId())
+                .ifPresent(oficina -> {
+                    OficinaDTO oficinaDTO = oficinaMapper.toDto(oficina);
+                    dto.setOficinaResponder(oficinaDTO);
+                });
+        }
+        // Los ArchivosAdjuntos son típicamente manejados directamente por PqrsMapper
+        return dto;
+    }
+
     public PqrsDTO create(PqrsDTO pqrsDTO) {
         LOG.debug("Request to create a Pqrs: {}", pqrsDTO);
         // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        pqrs.setEstado("Pendiente");
+        pqrs.setEstado("pendiente");
 
         Instant globalCurrentDate = Instant.now();
         pqrs.setFechaCreacion(globalCurrentDate);
@@ -189,7 +223,9 @@ public class PqrsService {
         pqrs = pqrsRepository.save(pqrs);
 
         // 4. Retornar DTO con todos los datos
-        return pqrsMapper.toDto(pqrs);
+        return mapPqrsToDtoConOficina(pqrs);
+        // return pqrsMapper.toDto(pqrs);
+
     }
 
     private ArchivoAdjunto convertToEntity(ArchivoAdjuntoDTO dto) {
@@ -221,6 +257,17 @@ public class PqrsService {
         }
 
         pqrs = pqrsRepository.save(pqrs);
+        //return pqrsMapper.toDto(pqrs);
         return pqrsMapper.toDto(pqrs);
     }
+    // @Transactional(readOnly = true)
+    // public List<PqrsDTO> getByActivePqrsAndOffice(){
+
+    //     String CLOSED_STATE = "closed";
+
+    //     List<Pqrs> pqrsActive = pqrsRepository.findByEstadoNot(CLOSED_STATE);
+    //     return null;
+
+    // }
+
 }
