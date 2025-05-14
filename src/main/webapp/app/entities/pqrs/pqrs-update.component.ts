@@ -1,4 +1,4 @@
-import { type Ref, computed, defineComponent, inject, ref } from 'vue';
+import { type Ref, computed, defineComponent, inject, ref, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
@@ -24,52 +24,66 @@ export default defineComponent({
     const archivoAdjuntoService = inject('archivoAdjuntoService', () => new ArchivoAdjuntoService());
     const oficinaService = inject('oficinaService', () => new OficinaService());
 
-    const files = ref<File[]>([]); // Lista de archivos seleccionados (temporal)
-    const fileInput = ref<HTMLInputElement | null>(null); // Referencia al input de tipo file
-    const archivosAdjuntosDTO = ref<IArchivoAdjunto[]>([]); // Lista de archivos subidos
-    const isUploading = ref(false); // Estado de subida
-    const errorMessage = ref<string | null>(null); // Mensaje de error
-    const successMessage = ref<string | null>(null); // Mensaje de éxito
+    const files = ref<File[]>([]);
+    const existingFilesInfo: Ref<IArchivoAdjunto[]> = ref([]);
+    const filesToDelete: Ref<string[]> = ref([]);
+    const fileInput = ref<HTMLInputElement | null>(null);
+    const archivosAdjuntosDTO = ref<IArchivoAdjunto[]>([]);
+    const isUploading = ref(false);
+    const errorMessage = ref<string | null>(null);
+    const successMessage = ref<string | null>(null);
 
     const pqrs: Ref<IPqrs> = ref(new Pqrs());
     const oficinas: Ref<IOficina[]> = ref([]);
-    let isSaving = ref(false);
+    const isSaving = ref(false);
 
-    const input = ref(null);
+    const input: Ref<HTMLInputElement | null> = ref(null);
     const currentLanguage = inject('currentLanguage', () => computed(() => navigator.language ?? 'es'), true);
 
     const route = useRoute();
     const router = useRouter();
 
-    const previousState = () => router.go(-1);
+    const previousState = () => {
+      filesToDelete.value = [];
+      router.go(-1);
+    };
 
-    // Método para eliminar un archivo de la lista y del input de tipo file
     const removeFile = (index: number) => {
-      files.value = files.value.filter((_, i) => i !== index); // Crear una nueva lista sin el archivo que se desea eliminar
+      files.value = files.value.filter((_, i) => i !== index);
 
-      // Reiniciar el input de tipo file
       if (fileInput.value) {
-        fileInput.value.value = ''; // Reiniciar el valor del input
+        fileInput.value.value = '';
       }
     };
 
-    // Método para abrir el diálogo de selección de archivos
+    const removeExistingFile = (index: number) => {
+      if (existingFilesInfo.value && Array.isArray(existingFilesInfo.value) && existingFilesInfo.value[index]) {
+        const fileToRemove = existingFilesInfo.value[index];
+
+        if (fileToRemove.urlArchivo && !filesToDelete.value.includes(fileToRemove.urlArchivo)) {
+          filesToDelete.value.push(fileToRemove.urlArchivo);
+        }
+
+        existingFilesInfo.value = existingFilesInfo.value.filter((_, currentIndex) => currentIndex !== index);
+      }
+    };
+
     const triggerFileInput = () => {
       if (fileInput.value) {
-        fileInput.value.click(); // Simular clic en el input de tipo file
+        fileInput.value.click();
       }
     };
 
-    // Método para manejar la selección de archivos
     const onFileChange = (event: Event) => {
-      input.value = event.target as HTMLInputElement;
-      if (input.value.files && input.value.files.length > 0) {
-        const newFiles = Array.from(input.value.files); // Convertir FileList a array
-        files.value = [...files.value, ...newFiles]; // Agregar nuevos archivos a la lista
+      const target = event.target as HTMLInputElement;
+      if (target && target.files && target.files.length > 0) {
+        input.value = target;
+        const newFiles = Array.from(target.files);
+        files.value = [...files.value, ...newFiles];
+        target.value = '';
       }
     };
 
-    // Subir archivos al servidor
     const uploadFiles = async () => {
       isUploading.value = true;
       errorMessage.value = null;
@@ -77,54 +91,109 @@ export default defineComponent({
 
       const formData = new FormData();
       files.value.forEach(file => {
-        formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
+        formData.append('files', file);
       });
 
-      formData.append('pqrs_id', route.params.pqrsId as string);
-
       try {
-        console.log('Iniciando subida de archivos...'); // Debug
         const uploadResponse = await archivoAdjuntoService().uploadFiles(formData);
-        archivosAdjuntosDTO.value = uploadResponse; // Guardar los archivos subidos (con sus IDs)
+        archivosAdjuntosDTO.value = uploadResponse;
 
-        //console.log('Archivos subidos correctamente:', archivosAdjuntosDTO.value); // Debug
-        console.log('Archivos subidos correctamente:', uploadResponse.values); // Debug
         successMessage.value = 'Archivos subidos correctamente';
       } catch (error) {
-        console.error('Error subiendo archivos:', error); // Debug
         errorMessage.value = 'Error al subir archivos';
-        throw error; // Relanzar el error para manejarlo en el método save
+        throw error;
       } finally {
         isUploading.value = false;
       }
     };
 
-    // Obtener la PQRS actual
     const retrievePqrs = async (pqrsId: string) => {
       try {
         const res = await pqrsService().find(pqrsId);
-        res.fechaCreacion = new Date(res.fechaCreacion);
-        res.fechaLimiteRespuesta = new Date(res.fechaLimiteRespuesta);
+        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : undefined;
+        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : undefined;
 
-        // Si la PQRS ya tiene archivos adjuntos, cargarlos
         if (res.archivosAdjuntosDTO) {
-          archivosAdjuntosDTO.value = res.archivosAdjuntosDTO;
-
-          files.value = res.archivosAdjuntosDTO.map(v => ({ name: v.nombre }));
+          existingFilesInfo.value = res.archivosAdjuntosDTO;
+        } else {
+          existingFilesInfo.value = [];
         }
 
+        files.value = [];
         pqrs.value = res;
-      } catch (error) {
-        alertService.showHttpError(error.response);
+      } catch (error: any) {
+        if (error && error.response) {
+          alertService.showHttpError(error.response);
+        } else {
+          alertService.showHttpError('An unexpected error ocurred while retrieving PQRS data');
+        }
       }
     };
 
-    // Cargar la PQRS si estamos editando
+    const downloadAttachedFile = async (fileURL: string | null | undefined, fileName: string | null | undefined) => {
+      if (!fileURL && !fileName) {
+        return;
+      }
+      try {
+        if (fileURL && fileName) {
+          const { blob } = await archivoAdjuntoService().downloadAttachedFile(fileURL);
+          const link = document.createElement('a');
+          const url = window.URL.createObjectURL(blob);
+          link.href = url;
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }
+      } catch (error: any) {
+        alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
+      }
+    };
+
+    const save = async (): Promise<void> => {
+      try {
+        if (isSaving.value) {
+          return;
+        }
+
+        isSaving.value = true;
+        if (filesToDelete.value.length > 0) {
+          await archivoAdjuntoService().deleteMultiple(filesToDelete.value);
+          filesToDelete.value = [];
+        }
+
+        if (files.value.length > 0) {
+          await uploadFiles();
+          const arr = pqrs.value.archivosAdjuntosDTO?.concat(archivosAdjuntosDTO.value);
+          pqrs.value.archivosAdjuntosDTO = arr;
+        }
+
+        let savedPqrs;
+        if (pqrs.value.id) {
+          savedPqrs = await pqrsService().update(pqrs.value);
+          alertService.showInfo(t$('ventanillaUnicaApp.pqrs.updated', { param: savedPqrs.id }));
+        } else {
+          savedPqrs = await pqrsService().create(pqrs.value);
+          alertService.showSuccess(t$('ventanillaUnicaApp.pqrs.created', { param: savedPqrs.id }).toString());
+        }
+
+        previousState();
+      } catch (error: any) {
+        alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
+      } finally {
+        isSaving.value = false;
+      }
+    };
+
+    onUnmounted(() => {
+      filesToDelete.value = [];
+    });
+
     if (route.params?.pqrsId) {
       retrievePqrs(route.params.pqrsId as string);
     }
 
-    // Inicializar relaciones (oficinas)
     const initRelationships = () => {
       oficinaService()
         .retrieve()
@@ -135,7 +204,6 @@ export default defineComponent({
 
     initRelationships();
 
-    // Utilidades de datos y validación
     const dataUtils = useDataUtils();
     const { t: t$ } = useI18n();
     const validations = useValidation();
@@ -164,12 +232,16 @@ export default defineComponent({
       currentLanguage,
       oficinas,
       files,
+      existingFilesInfo,
+      downloadAttachedFile,
       fileInput,
       archivosAdjuntosDTO,
       uploadFiles,
       onFileChange,
       triggerFileInput,
       removeFile,
+      removeExistingFile,
+      save,
       isUploading,
       errorMessage,
       successMessage,
@@ -178,51 +250,5 @@ export default defineComponent({
       ...useDateFormat({ entityRef: pqrs }),
       t$,
     };
-  },
-  methods: {
-    created(): void {},
-
-    async save(): Promise<void> {
-      try {
-        // Evitar doble envío
-        if (this.isSaving) {
-          return; // Si ya se está guardando, no hacer nada
-        }
-
-        this.isSaving = true; // Evitar doble envío
-        console.log('entro a save');
-
-        // 1️⃣ Subir los archivos antes de guardar la PQRS
-        if (this.files.length > 0) {
-          await this.uploadFiles();
-        }
-
-        this.pqrs.archivosAdjuntosDTO = this.archivosAdjuntosDTO;
-
-        // this.pqrs.archivosAdjuntosDTO.value = this.archivosAdjuntosDTO.value;
-
-        console.log('archivosAdjuntosDTO:', this.archivosAdjuntosDTO); // Debug
-
-        console.log('llego hasta antes de uodate o guardar la pqrs');
-
-        // 3️⃣ Guardar la PQRS en la base de datos
-        let savedPqrs;
-        if (this.pqrs.id) {
-          savedPqrs = await this.pqrsService().update(this.pqrs);
-          this.alertService.showInfo(this.t$('ventanillaUnicaApp.pqrs.updated', { param: savedPqrs.id }));
-        } else {
-          savedPqrs = await this.pqrsService().create(this.pqrs);
-          console.log('PQRS creada:', savedPqrs);
-          this.alertService.showSuccess(this.t$('ventanillaUnicaApp.pqrs.created', { param: savedPqrs.id }).toString());
-        }
-
-        this.previousState(); // Redirigir a la lista de PQRS
-      } catch (error) {
-        console.error('Error guardando la PQRS:', error);
-        this.alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
-      } finally {
-        this.isSaving = false;
-      }
-    },
   },
 });
