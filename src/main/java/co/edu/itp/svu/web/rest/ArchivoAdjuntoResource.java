@@ -1,10 +1,10 @@
 package co.edu.itp.svu.web.rest;
 
-import co.edu.itp.svu.domain.ArchivoAdjunto;
 import co.edu.itp.svu.repository.ArchivoAdjuntoRepository;
 import co.edu.itp.svu.service.ArchivoAdjuntoService;
 import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.web.rest.errors.BadRequestAlertException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.io.File;
@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -180,29 +179,13 @@ public class ArchivoAdjuntoResource {
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
 
-    ///////////////////////////////////////////////////////////////////////77
-    @PostMapping("/subir")
-    public ResponseEntity<ArchivoAdjunto> subirArchivo(@RequestParam("file") MultipartFile file) {
-        try {
-            ArchivoAdjunto archivoAdjunto = archivoAdjuntoService.save(file);
-            return ResponseEntity.status(HttpStatus.CREATED).body(archivoAdjunto);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////7
-    // Endpoint para descargar archivo
-    @GetMapping("/api/archivos/{fileName}")
+    @GetMapping("/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) throws IOException {
-        // Llama al servicio para obtener el archivo
+        LOG.debug("REST request to download the file: {}", fileName);
         File file = archivoAdjuntoService.downloadFile(fileName);
-
-        // Crea un Resource a partir del archivo
         Path path = file.toPath();
         Resource resource = new UrlResource(path.toUri());
 
-        // Configura los encabezados para indicar que es una descarga
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -211,29 +194,59 @@ public class ArchivoAdjuntoResource {
 
     @DeleteMapping("/delete/{fileName}")
     public ResponseEntity<String> deleteFile(@PathVariable String fileName) {
+        LOG.debug("REST request to delete the file: {}", fileName);
+
         try {
             archivoAdjuntoService.deleteFile(fileName);
-            return ResponseEntity.ok("Archivo eliminado: " + fileName);
+            return ResponseEntity.ok("File deleted: " + fileName);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al eliminar archivo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error when deleting the file: " + e.getMessage());
         }
     }
 
-    /*  @PostMapping("/upload")
-    public List<String> handleFileUpload(@RequestParam("files") List<MultipartFile> files) {
-        return files
-            .stream()
-            .map(archivoAdjuntoService::saveFile) // Guardar cada archivo y obtener su ID
-            .collect(Collectors.toList());
-    }*/
+    @DeleteMapping("/delete-multiple")
+    public ResponseEntity<String> deleteMultipleFiles(@RequestBody FileNameListRequest requestBody) {
+        LOG.debug("REST request to delete one or more files. Received: {}", requestBody);
+
+        if (requestBody.equals(null) || requestBody.getFileNameList().equals(null) || requestBody.getFileNameList().isEmpty()) {
+            LOG.warn("Received empty or null file last for deletion.");
+            return ResponseEntity.badRequest().body("File list cannot be empty");
+        }
+
+        try {
+            for (String fileName : requestBody.getFileNameList()) {
+                archivoAdjuntoService.deleteFile(fileName);
+                archivoAdjuntoService.deleteByFileURL(fileName);
+            }
+            return ResponseEntity.ok("Files deleted: " + requestBody.getFileNameList());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when deleting the file: " + e.getMessage());
+        }
+    }
+
+    public static class FileNameListRequest {
+
+        @JsonProperty("fileNameList")
+        private List<String> fileNameList;
+
+        public List<String> getFileNameList() {
+            return this.fileNameList;
+        }
+
+        public void setFileNames(List<String> fileNameList) {
+            this.fileNameList = fileNameList;
+        }
+
+        @Override
+        public String toString() {
+            return "FileNameListRequest{" + "fileNameList=" + fileNameList + "}";
+        }
+    }
+
     @PostMapping("/upload")
-    public List<ArchivoAdjuntoDTO> handleFileUpload(
-        @RequestParam("files") List<MultipartFile> files,
-        @RequestParam("pqrs_id") String pqrs_id
-    ) {
-        return files
-            .stream()
-            .map(file -> archivoAdjuntoService.saveFile(file, pqrs_id)) // Ahora saveFile retorna DTO
-            .collect(Collectors.toList());
+    public List<ArchivoAdjuntoDTO> handleFileUpload(@RequestParam("files") List<MultipartFile> files) {
+        LOG.debug("REST request to upload one or more files");
+
+        return files.stream().map(archivoAdjuntoService::saveFile).collect(Collectors.toList());
     }
 }
