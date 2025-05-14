@@ -34,23 +34,13 @@ public class PqrsService {
 
     private final PqrsMapper pqrsMapper;
 
-    private final ArchivoAdjuntoMapper archivoAdjuntoMapper;
-
     private final PqrsRepository pqrsRepository;
 
     private final OficinaRepository oficinaRepository;
 
     private final ArchivoAdjuntoRepository archivoAdjuntoRepository;
 
-    private final ArchivoAdjuntoService archivoAdjuntoService;
-
     private OficinaMapper oficinaMapper;
-
-    private final MongoTemplate mongoTemplate; // Para operaciones más avanzadas
-
-    // Ruta base donde se guardarán los archivos (podría venir de application.properties)
-    // @Value("${app.file.upload-dir:/home/adrian/Adr/svufiles/}")
-    private String uploadDir;
 
     public PqrsService(
         PqrsRepository pqrsRepository,
@@ -64,12 +54,9 @@ public class PqrsService {
     ) {
         this.pqrsRepository = pqrsRepository;
         this.pqrsMapper = pqrsMapper;
-        this.archivoAdjuntoMapper = archivoAdjuntoMapper;
         this.oficinaRepository = oficinaRepository;
         this.archivoAdjuntoRepository = archivoAdjuntoRepository;
-        this.archivoAdjuntoService = archivoAdjuntoService;
         this.oficinaMapper = oficinaMapper;
-        this.mongoTemplate = mongoTemplate;
     }
 
     /**
@@ -123,8 +110,6 @@ public class PqrsService {
         LOG.debug("Request to delete Pqrs : {}", id);
         pqrsRepository.deleteById(id);
     }
-
-    ////////Cambios aqui //////////////////////////77
 
     /**
      * Get all the pqrs with oficina.
@@ -205,97 +190,6 @@ public class PqrsService {
         // 4. Retornar DTO con todos los datos
         return pqrsMapper.toDto(pqrs);
     }
-
-    /*
-    public PqrsDTO create(PqrsDTO pqrsDTO) {
-        // 1. Convertir y guardar PQRS principal
-        Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        //pqrs = pqrsRepository.save(pqrs);
-    
-        // 2. Procesar archivos adjuntos (solo metadatos)
-        if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
-            Set<ArchivoAdjunto> archivosAdjuntos = pqrsDTO.getArchivosAdjuntosDTO()
-                .stream()
-                .map(dto -> {
-                    // Generar nombre único
-                    String nombreOriginal = dto.getNombre();
-                    String nombreBase = nombreOriginal.substring(0, nombreOriginal.lastIndexOf('.'));
-                    String extension = nombreOriginal.substring(nombreOriginal.lastIndexOf('.'));
-                    String nombreUnico = nombreBase + "_" + UUID.randomUUID() + extension;
-    
-                    // Crear entidad ArchivoAdjunto
-                    return new ArchivoAdjunto()
-                        .nombre(nombreOriginal)
-                        .tipo(dto.getTipo())
-                        .urlArchivo("/home/adrian/Adr/svufiles/" + nombreUnico)
-                        .fechaSubida(Instant.now());
-                        
-                })
-                .map(archivoAdjuntoRepository::save) // Guardar cada archivo
-                .collect(Collectors.toSet());
-    
-            pqrs.setArchivosAdjuntos(archivosAdjuntos);
-            pqrsRepository.save(pqrs);
-           
-        }
-    
-        return pqrsMapper.toDto(pqrs);
-    }
-*/
-
-    /*public PqrsDTO create(PqrsDTO pqrsDTO) throws IOException {
-    uploadDir = new String ("/home/adrian/Adr/svufiles/") ;
-    // Validar entrada
-    if (pqrsDTO == null) {
-        throw new IllegalArgumentException("PQRSDTO no puede ser nulo");
-    }
-
-    Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-    
-    // Procesar archivos
-    if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
-        String directorioBase = uploadDir;
-        Path directorioPath = Paths.get(directorioBase);
-        
-        // Crear directorio si no existe
-        if (!Files.exists(directorioPath)) {
-            Files.createDirectories(directorioPath);
-        }
-
-        Set<ArchivoAdjunto> archivosAdjuntos = new HashSet<>();
-        
-        for (ArchivoAdjuntoDTO dto : pqrsDTO.getArchivosAdjuntosDTO()) {
-            // Validar archivo
-            if (dto.getContenidoArchivo() == null || dto.getContenidoArchivo().length == 0) {
-                continue;
-            }
-
-            // Generar nombre único
-            String nombreOriginal = Objects.requireNonNull(dto.getNombre());
-            String extension = nombreOriginal.substring(nombreOriginal.lastIndexOf('.'));
-            String nombreUnico = UUID.randomUUID() + extension;
-            Path rutaArchivo = directorioPath.resolve(nombreUnico);
-
-            // Guardar archivo
-           // Files.write(rutaArchivo, dto.getContenidoArchivo());
-
-            // Crear entidad
-            ArchivoAdjunto archivo = new ArchivoAdjunto()
-                .nombre(nombreOriginal)
-                .tipo(dto.getTipo())
-                .urlArchivo(rutaArchivo.toString())
-                .fechaSubida(Instant.now());
-
-            archivosAdjuntos.add(archivoAdjuntoRepository.save(archivo));
-        }
-        
-        pqrs.setArchivosAdjuntos(archivosAdjuntos);
-    }
-    
-    pqrs = pqrsRepository.save(pqrs);
-    return pqrsMapper.toDto(pqrs);
-}
-*/
 
     private ArchivoAdjunto convertToEntity(ArchivoAdjuntoDTO dto) {
         ArchivoAdjunto archivo = new ArchivoAdjunto();
