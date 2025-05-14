@@ -119,23 +119,34 @@
         <div>
           <div>
             <input type="file" ref="fileInput" @change="onFileChange" multiple style="display: none" />
-            <b-button type="button" @click="triggerFileInput" :disabled="isUploading">
+            <b-button class="mb-3" type="button" variant="primary" @click="triggerFileInput" :disabled="isUploading">
               {{ isUploading ? 'Subiendo...' : 'Seleccionar archivos' }}
             </b-button>
-            <ul>
-              <div v-if="existingFilesInfo?.length > 0">
-                <li v-for="(file, index) in existingFilesInfo" :key="index">
-                  <b-button variant="link" @click="downloadAttachedFile(file.urlArchivo, file.nombre)">{{ file.nombre }}</b-button>
-                  <b-button type="button" size="sm" @click="removeExistingFile(index)">Eliminar</b-button>
-                </li>
-              </div>
-              <div v-if="files?.length > 0">
-                <li v-for="(file, index) in files" :key="index">
-                  {{ file.name }}
-                  <b-button size="sm" type="button" @click="removeFile(index)">Eliminar</b-button>
-                </li>
-              </div>
-            </ul>
+            <div class="mb-5">
+              <b-list-group class="flex-wrap" horizontal v-if="existingFilesInfo?.length > 0">
+                <b-list-group-item class="border" v-for="(file, index) in existingFilesInfo" :key="index">
+                  <b-badge class="text-wrap" variant="light"
+                    ><b-button variant="link" @click="downloadAttachedFile(file.urlArchivo, file.nombre)">{{
+                      file.nombre
+                    }}</b-button></b-badge
+                  >
+                  <b-icon
+                    class="cursor-pointer"
+                    icon="x-square-fill"
+                    variant="danger"
+                    role="button"
+                    @click="removeExistingFile(index)"
+                  ></b-icon>
+                </b-list-group-item>
+              </b-list-group>
+
+              <b-list-group class="flex-wrap" horizontal v-if="files?.length > 0">
+                <b-list-group-item class="border" v-for="(file, index) in files" :key="index">
+                  <b-badge class="text-wrap" variant="light">{{ file.name }}</b-badge>
+                  <b-icon class="cursor-pointer" icon="x-square-fill" variant="danger" role="button" @click="removeFile(index)"></b-icon>
+                </b-list-group-item>
+              </b-list-group>
+            </div>
           </div>
           <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" @click="previousState()">
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.cancel')"></span>
