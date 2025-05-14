@@ -165,8 +165,11 @@ export default defineComponent({
 
         if (files.value.length > 0) {
           await uploadFiles();
-          const arr = pqrs.value.archivosAdjuntosDTO?.concat(archivosAdjuntosDTO.value);
-          pqrs.value.archivosAdjuntosDTO = arr;
+          if (pqrs.value.archivosAdjuntosDTO) {
+            pqrs.value.archivosAdjuntosDTO = pqrs.value.archivosAdjuntosDTO?.concat(archivosAdjuntosDTO.value);
+          } else {
+            pqrs.value.archivosAdjuntosDTO = archivosAdjuntosDTO.value;
+          }
         }
 
         let savedPqrs;
