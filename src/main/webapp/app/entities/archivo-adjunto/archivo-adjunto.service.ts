@@ -1,13 +1,10 @@
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 
 import { type IArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
 
 const baseApiUrl = 'api/archivo-adjuntos';
 
 export default class ArchivoAdjuntoService {
-  private archivo: File | null = null;
-  private nombrePqrs: string = '';
-
   public find(id: string): Promise<IArchivoAdjunto> {
     return new Promise<IArchivoAdjunto>((resolve, reject) => {
       axios
@@ -96,28 +93,22 @@ export default class ArchivoAdjuntoService {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data; // Devuelve el archivo subido
+      return response.data;
     } catch (error) {
-      throw new Error('Error al subir el archivo');
+      throw new Error('Error uploading the file');
     }
   }
 
-  // Método para subir archivos
-  public uploadFiles(files: File[]): Promise<string[]> {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file); // 'files' debe coincidir con el nombre del parámetro en el backend
-    });
-
-    return new Promise<string[]>((resolve, reject) => {
+  public uploadFiles(formData: FormData): Promise<IArchivoAdjunto[]> {
+    return new Promise<IArchivoAdjunto[]>((resolve, reject) => {
       axios
         .post(`${baseApiUrl}/upload`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data', // Importante para enviar archivos
+            'Content-Type': 'multipart/form-data',
           },
         })
         .then(res => {
-          resolve(res.data); // Devuelve los IDs de los archivos subidos
+          resolve(res.data);
         })
         .catch(err => {
           reject(err);
@@ -127,5 +118,19 @@ export default class ArchivoAdjuntoService {
 
   public async deleteArchivo(nombre: string): Promise<void> {
     return axios.delete(`${baseApiUrl}/${nombre}`);
+  }
+
+  public async deleteMultiple(filesToDelete: string[]): Promise<void> {
+    return axios.delete(`${baseApiUrl}/delete-multiple`, { data: { fileNameList: filesToDelete } });
+  }
+
+  public async downloadAttachedFile(fileIdentifier: string): Promise<{ blob: Blob }> {
+    const encodedIdentifier = encodeURIComponent(fileIdentifier);
+    const url = `${baseApiUrl}/download/${encodedIdentifier}`;
+
+    const response: AxiosResponse<Blob> = await axios.get(url, {
+      responseType: 'blob',
+    });
+    return { blob: response.data };
   }
 }

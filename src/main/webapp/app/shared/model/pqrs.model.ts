@@ -5,11 +5,11 @@ export interface IPqrs {
   id?: string;
   titulo?: string;
   descripcion?: string;
-  fechaCreacion?: Date;
+  fechaCreacion?: Date | undefined;
   fechaLimiteRespuesta?: Date | null;
   estado?: string;
   oficinaResponder?: IOficina | null;
-  archivosAdjuntosDTO?: IArchivoAdjunto[] | null; // Lista de archivos adjuntos
+  archivosAdjuntosDTO?: IArchivoAdjunto[] | null;
 }
 
 export class Pqrs implements IPqrs {
@@ -17,10 +17,10 @@ export class Pqrs implements IPqrs {
     public id?: string,
     public titulo?: string,
     public descripcion?: string,
-    public fechaCreacion?: Date,
+    public fechaCreacion?: Date | undefined,
     public fechaLimiteRespuesta?: Date | null,
     public estado?: string,
     public oficinaResponder?: IOficina | null,
-    public archivosAdjuntosDTO?: IArchivoAdjunto[] | null, // Lista de archivos adjuntos
+    public archivosAdjuntosDTO?: IArchivoAdjunto[] | null,
   ) {}
 }

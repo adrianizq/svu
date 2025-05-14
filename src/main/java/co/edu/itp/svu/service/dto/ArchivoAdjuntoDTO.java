@@ -4,8 +4,6 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A DTO for the {@link co.edu.itp.svu.domain.ArchivoAdjunto} entity.

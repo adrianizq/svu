@@ -203,4 +203,6 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  file:
+    upload-dir: /home/adrian/Adr/svufiles/

@@ -1,6 +1,5 @@
 package co.edu.itp.svu.config;
 
-import co.edu.itp.svu.domain.ArchivoAdjunto;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -14,6 +13,7 @@ public class ApplicationProperties {
 
     private final Upload upload = new Upload();
     private final Jasper jasper = new Jasper();
+    private final File file = new File();
 
     private String filesPath;
 
@@ -31,6 +31,23 @@ public class ApplicationProperties {
 
     public Jasper getJasper() {
         return this.jasper;
+    }
+
+    public File getFile() {
+        return this.file;
+    }
+
+    public static class File {
+
+        private String uploadDir = "/home/adrian/Adr/svufiles/";
+
+        public String getUploadDir() {
+            return this.uploadDir;
+        }
+
+        public void setUploadDir(String uploadDir) {
+            this.uploadDir = uploadDir;
+        }
     }
 
     public static class Jasper {

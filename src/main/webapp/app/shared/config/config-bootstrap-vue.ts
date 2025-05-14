@@ -23,12 +23,16 @@ import {
   BPagination,
   BProgress,
   BProgressBar,
+  BListGroup,
+  BListGroupItem,
   ToastPlugin,
+  IconsPlugin,
   VBModal,
 } from 'bootstrap-vue';
 
 export function initBootstrapVue(vue) {
   vue.use(ToastPlugin);
+  vue.use(IconsPlugin);
 
   vue.component('b-badge', BBadge);
   vue.component('b-dropdown', BDropdown);
@@ -55,4 +59,6 @@ export function initBootstrapVue(vue) {
   vue.component('b-form-datepicker', BFormDatepicker);
   vue.component('b-input-group', BInputGroup);
   vue.component('b-input-group-prepend', BInputGroupPrepend);
+  vue.component('b-list-group', BListGroup);
+  vue.component('b-list-group-item', BListGroupItem);
 }

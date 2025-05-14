@@ -14,7 +14,6 @@ import co.edu.itp.svu.service.mapper.OficinaMapper;
 import co.edu.itp.svu.service.mapper.PqrsMapper;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,16 +34,13 @@ public class PqrsService {
 
     private final PqrsMapper pqrsMapper;
 
-    private final ArchivoAdjuntoMapper archivoAdjuntoMapper;
-
     private final PqrsRepository pqrsRepository;
 
     private final OficinaRepository oficinaRepository;
 
     private final ArchivoAdjuntoRepository archivoAdjuntoRepository;
-    private OficinaMapper oficinaMapper;
 
-    private final MongoTemplate mongoTemplate; // Para operaciones más avanzadas
+    private OficinaMapper oficinaMapper;
 
     public PqrsService(
         PqrsRepository pqrsRepository,
@@ -52,16 +48,15 @@ public class PqrsService {
         ArchivoAdjuntoMapper archivoAdjuntoMapper,
         OficinaRepository oficinaRepository,
         ArchivoAdjuntoRepository archivoAdjuntoRepository,
+        ArchivoAdjuntoService archivoAdjuntoService,
         OficinaMapper oficinaMapper,
         MongoTemplate mongoTemplate
     ) {
         this.pqrsRepository = pqrsRepository;
         this.pqrsMapper = pqrsMapper;
-        this.archivoAdjuntoMapper = archivoAdjuntoMapper;
         this.oficinaRepository = oficinaRepository;
         this.archivoAdjuntoRepository = archivoAdjuntoRepository;
         this.oficinaMapper = oficinaMapper;
-        this.mongoTemplate = mongoTemplate;
     }
 
     /**
@@ -116,8 +111,6 @@ public class PqrsService {
         pqrsRepository.deleteById(id);
     }
 
-    ////////Cambios aqui //////////////////////////77
-
     /**
      * Get all the pqrs with oficina.
      *
@@ -166,6 +159,7 @@ public class PqrsService {
     }
 
     public PqrsDTO create(PqrsDTO pqrsDTO) {
+        LOG.debug("Request to create a Pqrs: {}", pqrsDTO);
         // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         pqrs.setEstado("Pendiente");

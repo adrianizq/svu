@@ -1,23 +1,15 @@
 package co.edu.itp.svu.web.rest;
 
-import co.edu.itp.svu.domain.ArchivoAdjunto;
 import co.edu.itp.svu.repository.PqrsRepository;
-import co.edu.itp.svu.service.ArchivoAdjuntoService;
 import co.edu.itp.svu.service.PqrsService;
-import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.service.dto.PqrsDTO;
 import co.edu.itp.svu.web.rest.errors.BadRequestAlertException;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -50,68 +40,11 @@ public class PqrsResource {
     private final PqrsService pqrsService;
 
     private final PqrsRepository pqrsRepository;
-    private ArchivoAdjuntoService archivosAdjuntoService;
 
-    public PqrsResource(PqrsService pqrsService, PqrsRepository pqrsRepository, ArchivoAdjuntoService archivosAdjuntoService) {
+    public PqrsResource(PqrsService pqrsService, PqrsRepository pqrsRepository) {
         this.pqrsService = pqrsService;
         this.pqrsRepository = pqrsRepository;
-        this.archivosAdjuntoService = archivosAdjuntoService;
     }
-
-    /**
-     * {@code POST  /pqrs} : Create a new pqrs.
-     *
-     * @param pqrsDTO the pqrsDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new pqrsDTO, or with status {@code 400 (Bad Request)} if the pqrs has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    /*   @PostMapping("")
-    public ResponseEntity<PqrsDTO> createPqrs(@Valid @RequestBody PqrsDTO pqrsDTO) throws URISyntaxException {
-        LOG.debug("REST request to save Pqrs : {}", pqrsDTO);
-        if (pqrsDTO.getId() != null) {
-            throw new BadRequestAlertException("A new pqrs cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        pqrsDTO = pqrsService.save(pqrsDTO);
-        return ResponseEntity.created(new URI("/api/pqrs/" + pqrsDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, pqrsDTO.getId()))
-            .body(pqrsDTO);
-    }*/
-
-    /**
-     * {@code PUT  /pqrs/:id} : Updates an existing pqrs.
-     *
-     * @param id the id of the pqrsDTO to save.
-     * @param pqrsDTO the pqrsDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated pqrsDTO,
-     * or with status {@code 400 (Bad Request)} if the pqrsDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the pqrsDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    /*
-    @PutMapping("/{id}")
-    public ResponseEntity<PqrsDTO> updatePqrs(
-        @PathVariable(value = "id", required = false) final String id,
-        @Valid @RequestBody PqrsDTO pqrsDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to update Pqrs : {}, {}", id, pqrsDTO);
-        if (pqrsDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, pqrsDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!pqrsRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        pqrsDTO = pqrsService.update(pqrsDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, pqrsDTO.getId()))
-            .body(pqrsDTO);
-    }
-
-     */
 
     /**
      * {@code PATCH  /pqrs/:id} : Partial updates given fields of an existing pqrs, field will ignore if it is null
@@ -155,7 +88,6 @@ public class PqrsResource {
     @GetMapping("")
     public ResponseEntity<List<PqrsDTO>> getAllPqrs(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of Pqrs");
-        //Page<PqrsDTO> page = pqrsService.findAll(pageable);
         Page<PqrsDTO> page = pqrsService.findAllOficina(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -170,7 +102,6 @@ public class PqrsResource {
     @GetMapping("/{id}")
     public ResponseEntity<PqrsDTO> getPqrs(@PathVariable("id") String id) {
         LOG.debug("REST request to get Pqrs : {}", id);
-        //Optional<PqrsDTO> pqrsDTO = pqrsService.findOne(id);
         Optional<PqrsDTO> pqrsDTO = pqrsService.findOneOficina(id);
         return ResponseUtil.wrapOrNotFound(pqrsDTO);
     }
@@ -188,63 +119,34 @@ public class PqrsResource {
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
 
-    //Modificaciones desde aqui
-    //ya existe createPqrs pero esa la voy a dejar para mas adelante para users anomimos
-    /* @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<PqrsDTO> registrarPqr(
-        @RequestPart("pqrDTO") PqrsDTO pqrDTO,
-        @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos
-    ) throws URISyntaxException {
-        if (pqrDTO.getId() != null) {
-            throw new BadRequestAlertException("A new PQRS cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-
-        // Procesar los archivos adjuntos si existen
-        List<ArchivoAdjuntoDTO> archivosAdjuntos = new ArrayList<>();
-        if (archivos != null && !archivos.isEmpty()) {
-            archivosAdjuntos = archivos
-                .stream()
-                .map(file -> {
-                    ArchivoAdjuntoDTO adjunto = new ArchivoAdjuntoDTO();
-                    adjunto.setNombre(file.getOriginalFilename());
-                    adjunto.setTipo(file.getContentType());
-                    adjunto.setFechaSubida(Instant.now());
-
-                    try {
-                        ArchivoAdjunto archivoAdjunto = archivosAdjuntoService.save(file);
-                        adjunto.setUrlArchivo(archivoAdjunto.getUrlArchivo());
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error al guardar el archivo adjunto", e);
-                    }
-
-                    return adjunto;
-                })
-                .collect(Collectors.toList());
-        }
-
-        LOG.debug("Solicitud para crear una PQR por ADMIN: {}", pqrDTO);
-        PqrsDTO nuevaPqr = pqrsService.create(pqrDTO, archivosAdjuntos);
-
-        return ResponseEntity.created(new URI("/api/pqrs/" + nuevaPqr.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, nuevaPqr.getId().toString()))
-            .body(nuevaPqr);
-    }
-
-    */
-    // Crear una nueva PQRS
+    /**
+     * {@code POST  /pqrs} : Create a new pqrs.
+     *
+     * @param pqrsDTO the pqrsDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new pqrsDTO, or with status {@code 400 (Bad Request)} if the pqrs has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
     @PostMapping
-    public ResponseEntity<PqrsDTO> createPqrs(@RequestBody PqrsDTO pqrsDTO) {
+    public ResponseEntity<PqrsDTO> createPqrs(@RequestBody PqrsDTO pqrsDTO) throws IOException {
         LOG.debug("REST request to save Pqrs: {}", pqrsDTO);
         PqrsDTO result = pqrsService.create(pqrsDTO);
         return ResponseEntity.ok(result);
     }
 
-    // Actualizar una PQRS existente
+    /**
+     * {@code PUT  /pqrs/:id} : Updates an existing pqrs.
+     *
+     * @param id the id of the pqrsDTO to save.
+     * @param pqrsDTO the pqrsDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated pqrsDTO,
+     * or with status {@code 400 (Bad Request)} if the pqrsDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the pqrsDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<PqrsDTO> updatePqrs(@PathVariable String id, @RequestBody PqrsDTO pqrsDTO) {
         LOG.debug("REST request to update Pqrs: {}", pqrsDTO);
-        pqrsDTO.setId(id); // Asegurar que el ID de la PQRS sea el correcto
+        pqrsDTO.setId(id);
         PqrsDTO result = pqrsService.update(pqrsDTO);
         return ResponseEntity.ok(result);
     }
