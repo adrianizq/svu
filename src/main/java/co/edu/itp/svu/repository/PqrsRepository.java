@@ -1,11 +1,8 @@
 package co.edu.itp.svu.repository;
 
 import co.edu.itp.svu.domain.Pqrs;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
