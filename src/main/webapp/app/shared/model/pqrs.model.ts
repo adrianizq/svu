@@ -5,7 +5,7 @@ export interface IPqrs {
   id?: string;
   titulo?: string;
   descripcion?: string;
-  fechaCreacion?: Date;
+  fechaCreacion?: Date | undefined;
   fechaLimiteRespuesta?: Date | null;
   estado?: string;
   oficinaResponder?: IOficina | null;
@@ -17,7 +17,7 @@ export class Pqrs implements IPqrs {
     public id?: string,
     public titulo?: string,
     public descripcion?: string,
-    public fechaCreacion?: Date,
+    public fechaCreacion?: Date | undefined,
     public fechaLimiteRespuesta?: Date | null,
     public estado?: string,
     public oficinaResponder?: IOficina | null,
