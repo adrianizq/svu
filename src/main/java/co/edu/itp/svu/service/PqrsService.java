@@ -159,6 +159,7 @@ public class PqrsService {
     }
 
     public PqrsDTO create(PqrsDTO pqrsDTO) {
+        LOG.debug("Request to create a Pqrs: {}", pqrsDTO);
         // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
         pqrs.setEstado("Pendiente");
