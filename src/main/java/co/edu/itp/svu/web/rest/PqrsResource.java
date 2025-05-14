@@ -7,6 +7,7 @@ import co.edu.itp.svu.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -86,9 +88,18 @@ public class PqrsResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of pqrs in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<PqrsDTO>> getAllPqrs(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<List<PqrsDTO>> getAllPqrs(
+        @RequestParam(defaultValue = "closed", required = false) String state,
+        @RequestParam(required = false) String idOffice,
+        @RequestParam(name = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
         LOG.debug("REST request to get a page of Pqrs");
-        Page<PqrsDTO> page = pqrsService.findAllOficina(pageable);
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        LocalDate deadline = date.plusDays(1);
+        Page<PqrsDTO> page = pqrsService.findAll(state, idOffice, deadline, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
