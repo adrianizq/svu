@@ -1,11 +1,9 @@
 package co.edu.itp.svu.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -35,8 +33,6 @@ public class ArchivoAdjunto implements Serializable {
     @NotNull
     @Field("fecha_subida")
     private Instant fechaSubida;
-
-    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public String getId() {
         return this.id;
@@ -102,8 +98,6 @@ public class ArchivoAdjunto implements Serializable {
     public void setFechaSubida(Instant fechaSubida) {
         this.fechaSubida = fechaSubida;
     }
-
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
