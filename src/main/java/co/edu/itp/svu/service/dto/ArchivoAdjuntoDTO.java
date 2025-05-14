@@ -4,8 +4,6 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A DTO for the {@link co.edu.itp.svu.domain.ArchivoAdjunto} entity.
@@ -25,8 +23,6 @@ public class ArchivoAdjuntoDTO implements Serializable {
 
     @NotNull
     private Instant fechaSubida;
-
-    private byte[] contenidoArchivo; // Asegúrate de tener este campo
 
     public String getId() {
         return id;
@@ -66,15 +62,6 @@ public class ArchivoAdjuntoDTO implements Serializable {
 
     public void setFechaSubida(Instant fechaSubida) {
         this.fechaSubida = fechaSubida;
-    }
-
-    // Getters y setters
-    public byte[] getContenidoArchivo() {
-        return contenidoArchivo;
-    }
-
-    public void setContenidoArchivo(byte[] contenidoArchivo) {
-        this.contenidoArchivo = contenidoArchivo;
     }
 
     @Override
