@@ -21,6 +21,7 @@
       "titulo": "Titulo",
       "descripcion": "Descripcion",
       "fechaCreacion": "Fecha Creacion",
+      "diasParaRespuesta": "Días para Respuesta",
       "fechaLimiteRespuesta": "Fecha Limite Respuesta",
       "estado": "Estado",
       "archivosAdjuntos": "Archivos Adjuntos",

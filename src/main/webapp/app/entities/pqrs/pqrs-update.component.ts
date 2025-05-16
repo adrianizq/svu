@@ -1,8 +1,9 @@
-import { type Ref, computed, defineComponent, inject, ref, onUnmounted } from 'vue';
+import { computed, defineComponent, inject, ref, onUnmounted, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 
+import { LISTA_ESTADOS_PQRS } from '../../constants';
 import PqrsService from './pqrs.service';
 import useDataUtils from '@/shared/data/data-utils.service';
 import { useDateFormat, useValidation } from '@/shared/composables';
@@ -14,6 +15,7 @@ import { type IPqrs, Pqrs } from '@/shared/model/pqrs.model';
 
 import ArchivoAdjuntoService from '@/entities/archivo-adjunto/archivo-adjunto.service';
 import { type IArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
+import type AccountService from '@/account/account.service';
 
 export default defineComponent({
   compatConfig: { MODE: 3 },
@@ -22,6 +24,7 @@ export default defineComponent({
     const pqrsService = inject('pqrsService', () => new PqrsService());
     const alertService = inject('alertService', () => useAlertService(), true);
     const archivoAdjuntoService = inject('archivoAdjuntoService', () => new ArchivoAdjuntoService());
+    const accountService = inject<AccountService>('accountService');
     const oficinaService = inject('oficinaService', () => new OficinaService());
 
     const files = ref<File[]>([]);
@@ -42,6 +45,139 @@ export default defineComponent({
 
     const route = useRoute();
     const router = useRouter();
+
+    const diasParaRespuesta = ref<number | null>(null);
+    const listaEstadosPqrs = ref(LISTA_ESTADOS_PQRS);
+
+    // inicio del codigo
+    const isUpdateMode = computed(() => {
+      return !!pqrs.value.id;
+    });
+
+    const isAdmin = computed(() => {
+      if (accountService) {
+        const adminCheck = accountService.hasAnyAuthorityAndCheckAuth('ROLE_ADMIN');
+        return adminCheck;
+      }
+      return false;
+    });
+
+    const updateInstantField = (field: keyof IPqrs, event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.value) {
+        pqrs.value[field] = new Date(target.value);
+      } else {
+        pqrs.value[field] = null;
+      }
+    };
+
+    watch(
+      [diasParaRespuesta, () => pqrs.value.fechaCreacion],
+      ([newDias, newFechaCreacion]) => {
+        if (isUpdateMode.value && isAdmin.value) {
+          // Solo calcular si es admin en modo edición
+          if (newDias !== null && newDias >= 0 && newFechaCreacion instanceof Date) {
+            const fechaCreacionObj = new Date(newFechaCreacion);
+            const nuevaFechaLimite = new Date(fechaCreacionObj);
+            nuevaFechaLimite.setDate(fechaCreacionObj.getDate() + newDias);
+
+            // Asignar al campo fechaLimiteRespuesta del objeto pqrs
+            // Es importante que v$.fechaLimiteRespuesta.$model se actualice,
+            // lo cual sucede si está enlazado a pqrs.value.fechaLimiteRespuesta
+            pqrs.value.fechaLimiteRespuesta = nuevaFechaLimite;
+            console.log('[DEBUG] Nueva fechaLimiteRespuesta calculada:', pqrs.value.fechaLimiteRespuesta);
+          } else if (newDias === null && pqrs.value.fechaLimiteRespuesta !== undefined) {
+            // Si los días se borran, podríamos querer limpiar la fecha límite o dejarla como está.
+            // Por ahora, la limpiamos si el usuario borra los días.
+            // pqrs.value.fechaLimiteRespuesta = null; // Opcional: limpiar si los días se borran
+          }
+        }
+      },
+      { immediate: false },
+    ); // immediate: false para que no se ejecute al inicio antes de que todo esté cargado, a menos que lo necesites.
+
+    // ... retrievePqrs (asegúrate que inicializa pqrs.value.fechaCreacion como Date) ...
+    const retrievePqrs = async (pqrsId: string) => {
+      try {
+        const res = await pqrsService().find(pqrsId);
+
+        // Asegurar que las fechas sean objetos Date o null
+        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : null;
+        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : null;
+
+        // Pre-calcular y mostrar los días si ambas fechas existen al cargar
+        if (res.fechaLimiteRespuesta && res.fechaCreacion) {
+          const diffTime = Math.abs(res.fechaLimiteRespuesta.getTime() - res.fechaCreacion.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          diasParaRespuesta.value = diffDays; // Asegúrate que 'diasParaRespuesta' esté definido como ref
+        } else {
+          diasParaRespuesta.value = null; // Resetear si no hay datos para calcular
+        }
+
+        const retrievePqrs = async (pqrsId: string) => {
+          try {
+            const res = await pqrsService().find(pqrsId);
+
+            // Es CRUCIAL que fechaCreacion sea un objeto Date aquí para el watch y el cálculo
+            res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : null;
+            res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : null;
+
+            pqrs.value = res; // Asignar primero para que fechaCreacion esté disponible
+
+            // Luego, si quieres pre-rellenar diasParaRespuesta al cargar:
+            if (pqrs.value.fechaLimiteRespuesta && pqrs.value.fechaCreacion) {
+              // Cálculo de diferencia de días solo en la PARTE ENTERA del día
+              // Para evitar problemas con horas, normalizamos ambas fechas al inicio del día
+              const fc = new Date(
+                pqrs.value.fechaCreacion.getFullYear(),
+                pqrs.value.fechaCreacion.getMonth(),
+                pqrs.value.fechaCreacion.getDate(),
+              );
+              const flr = new Date(
+                pqrs.value.fechaLimiteRespuesta.getFullYear(),
+                pqrs.value.fechaLimiteRespuesta.getMonth(),
+                pqrs.value.fechaLimiteRespuesta.getDate(),
+              );
+
+              const diffTime = flr.getTime() - fc.getTime(); // Diferencia en milisegundos
+              if (diffTime >= 0) {
+                // Solo si la fecha límite es igual o posterior
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // Redondear al día más cercano
+                diasParaRespuesta.value = diffDays;
+              } else {
+                diasParaRespuesta.value = null; // Fechas inconsistentes
+              }
+            } else {
+              diasParaRespuesta.value = null;
+            }
+
+            // ... manejo de adjuntos, etc. ...
+          } catch (error: any) {
+            // ...
+          }
+        };
+
+        // Manejo de archivos adjuntos (de tu código original)
+        if (res.archivosAdjuntosDTO) {
+          existingFilesInfo.value = res.archivosAdjuntosDTO; // Asegúrate que 'existingFilesInfo' esté definido como ref
+        } else {
+          existingFilesInfo.value = [];
+        }
+        files.value = []; // Asegúrate que 'files' esté definido como ref
+
+        // Asignar el objeto PQRS
+        pqrs.value = res;
+      } catch (error: any) {
+        // Tu manejo de errores consistente
+        if (error && error.response) {
+          alertService.showHttpError(error.response);
+        } else {
+          // Puedes personalizar este mensaje si lo deseas
+          alertService.showError(t$('ventanillaUnicaApp.pqrs.errors.retrieveError')); // Usando i18n
+          console.error('Error retrieving PQRS data:', error);
+        }
+      }
+    };
 
     const previousState = () => {
       filesToDelete.value = [];
@@ -104,29 +240,6 @@ export default defineComponent({
         throw error;
       } finally {
         isUploading.value = false;
-      }
-    };
-
-    const retrievePqrs = async (pqrsId: string) => {
-      try {
-        const res = await pqrsService().find(pqrsId);
-        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : undefined;
-        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : undefined;
-
-        if (res.archivosAdjuntosDTO) {
-          existingFilesInfo.value = res.archivosAdjuntosDTO;
-        } else {
-          existingFilesInfo.value = [];
-        }
-
-        files.value = [];
-        pqrs.value = res;
-      } catch (error: any) {
-        if (error && error.response) {
-          alertService.showHttpError(error.response);
-        } else {
-          alertService.showHttpError('An unexpected error ocurred while retrieving PQRS data');
-        }
       }
     };
 
@@ -252,6 +365,11 @@ export default defineComponent({
       v$,
       ...useDateFormat({ entityRef: pqrs }),
       t$,
+      isUpdateMode,
+      isAdmin,
+      listaEstadosPqrs,
+      diasParaRespuesta,
+      updateInstantField,
     };
   },
 });
