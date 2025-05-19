@@ -17,6 +17,7 @@
 
       <jhi-footer></jhi-footer>
     </div>
+    <b-toaster name="b-toaster-top-right" class="p-3"></b-toaster>
   </div>
 </template>
 

@@ -317,7 +317,6 @@ public class UserService {
         }
     }
 
-    ////////////////////////////////////7
     public Optional<User> getUserByLogin(String login) {
         return userRepository.findOneByLogin(login);
     }
