@@ -1,9 +1,9 @@
-import { computed, defineComponent, inject, ref, onUnmounted, watch, type Ref } from 'vue';
+import { computed, defineComponent, inject, ref, onUnmounted, watch, type Ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 
-import { LISTA_ESTADOS_PQRS } from '../../constants';
+import { statesPqrs } from '../../constants';
 import PqrsService from './pqrs.service';
 import useDataUtils from '@/shared/data/data-utils.service';
 import { useDateFormat, useValidation } from '@/shared/composables';
@@ -26,6 +26,7 @@ export default defineComponent({
     const archivoAdjuntoService = inject('archivoAdjuntoService', () => new ArchivoAdjuntoService());
     const accountService = inject<AccountService>('accountService');
     const oficinaService = inject('oficinaService', () => new OficinaService());
+    const { t: t$ } = useI18n(); // Definir t$ aquí
 
     const files = ref<File[]>([]);
     const existingFilesInfo: Ref<IArchivoAdjunto[]> = ref([]);
@@ -46,20 +47,39 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
 
-    const diasParaRespuesta = ref<number | null>(null);
-    const listaEstadosPqrs = ref(LISTA_ESTADOS_PQRS);
+    const daysForResponse = ref<number | null>(null);
+    const statesPqrsRef = ref(statesPqrs);
 
-    // inicio del codigo
-    const isUpdateMode = computed(() => {
-      return !!pqrs.value.id;
-    });
+    const isAdminReactive = ref<boolean | null>(null);
+
+    const checkAdmin = async () => {
+      if (accountService) {
+        try {
+          const esAdminResultado = await accountService.hasAnyAuthorityAndCheckAuth('ROLE_ADMIN');
+          isAdminReactive.value = esAdminResultado;
+        } catch (error) {
+          console.error('Error al verificar el estado de admin:', error);
+          isAdminReactive.value = false;
+        }
+      } else {
+        isAdminReactive.value = false;
+      }
+    };
 
     const isAdmin = computed(() => {
-      if (accountService) {
-        const adminCheck = accountService.hasAnyAuthorityAndCheckAuth('ROLE_ADMIN');
-        return adminCheck;
+      return !!isAdminReactive.value;
+    });
+
+    onMounted(() => {
+      checkAdmin();
+      if (!route.params?.pqrsId) {
+        // Promise.resolve().then(() => console.log('[DEBUG CREATE MODE onMounted - after tick] isAdmin final:', isAdmin.value));
       }
-      return false;
+    });
+
+    const isUpdateMode = computed(() => {
+      const idExists = !!pqrs.value.id;
+      return idExists;
     });
 
     const updateInstantField = (field: keyof IPqrs, event: Event) => {
@@ -72,113 +92,68 @@ export default defineComponent({
     };
 
     watch(
-      [diasParaRespuesta, () => pqrs.value.fechaCreacion],
-      ([newDias, newFechaCreacion]) => {
+      [daysForResponse, () => pqrs.value.fechaCreacion],
+      ([newDays, newdateCreationObj]) => {
         if (isUpdateMode.value && isAdmin.value) {
-          // Solo calcular si es admin en modo edición
-          if (newDias !== null && newDias >= 0 && newFechaCreacion instanceof Date) {
-            const fechaCreacionObj = new Date(newFechaCreacion);
-            const nuevaFechaLimite = new Date(fechaCreacionObj);
-            nuevaFechaLimite.setDate(fechaCreacionObj.getDate() + newDias);
+          let dateCreationBase: Date | null = null;
+          if (newdateCreationObj instanceof Date) {
+            dateCreationBase = newdateCreationObj;
+          } else if (typeof newdateCreationObj === 'string' && newdateCreationObj) {
+            dateCreationBase = new Date(newdateCreationObj);
+          }
 
-            // Asignar al campo fechaLimiteRespuesta del objeto pqrs
-            // Es importante que v$.fechaLimiteRespuesta.$model se actualice,
-            // lo cual sucede si está enlazado a pqrs.value.fechaLimiteRespuesta
-            pqrs.value.fechaLimiteRespuesta = nuevaFechaLimite;
-            console.log('[DEBUG] Nueva fechaLimiteRespuesta calculada:', pqrs.value.fechaLimiteRespuesta);
-          } else if (newDias === null && pqrs.value.fechaLimiteRespuesta !== undefined) {
-            // Si los días se borran, podríamos querer limpiar la fecha límite o dejarla como está.
-            // Por ahora, la limpiamos si el usuario borra los días.
-            // pqrs.value.fechaLimiteRespuesta = null; // Opcional: limpiar si los días se borran
+          if (newDays !== null && typeof newDays === 'number' && newDays >= 0 && dateCreationBase && !isNaN(dateCreationBase.getTime())) {
+            const newDateLimit = new Date(dateCreationBase.getTime());
+            newDateLimit.setDate(newDateLimit.getDate() + newDays);
+            pqrs.value.fechaLimiteRespuesta = newDateLimit;
+          } else if (newDays === null && pqrs.value.fechaLimiteRespuesta !== undefined) {
+            // Si se borran los días
           }
         }
       },
-      { immediate: false },
-    ); // immediate: false para que no se ejecute al inicio antes de que todo esté cargado, a menos que lo necesites.
+      { deep: false },
+    );
 
-    // ... retrievePqrs (asegúrate que inicializa pqrs.value.fechaCreacion como Date) ...
     const retrievePqrs = async (pqrsId: string) => {
       try {
         const res = await pqrsService().find(pqrsId);
 
-        // Asegurar que las fechas sean objetos Date o null
-        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : null;
-        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : null;
+        res.dateCreation = res.dateCreation ? new Date(res.dateCreation) : null;
+        res.dateLimitResponse = res.dateLimitResponse ? new Date(res.dateLimitResponse) : null;
 
-        // Pre-calcular y mostrar los días si ambas fechas existen al cargar
-        if (res.fechaLimiteRespuesta && res.fechaCreacion) {
-          const diffTime = Math.abs(res.fechaLimiteRespuesta.getTime() - res.fechaCreacion.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          diasParaRespuesta.value = diffDays; // Asegúrate que 'diasParaRespuesta' esté definido como ref
+        pqrs.value = res;
+
+        if (pqrs.value.dateLimitResponse && pqrs.value.dateCreation) {
+          const fc = new Date(pqrs.value.dateCreation.getTime());
+          const flr = new Date(pqrs.value.dateLimitResponse.getTime());
+          fc.setHours(0, 0, 0, 0);
+          flr.setHours(0, 0, 0, 0);
+          const diffTime = flr.getTime() - fc.getTime();
+          if (diffTime >= 0) {
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            daysForResponse.value = diffDays;
+          } else {
+            daysForResponse.value = null;
+          }
         } else {
-          diasParaRespuesta.value = null; // Resetear si no hay datos para calcular
+          daysForResponse.value = null;
         }
 
-        const retrievePqrs = async (pqrsId: string) => {
-          try {
-            const res = await pqrsService().find(pqrsId);
-
-            // Es CRUCIAL que fechaCreacion sea un objeto Date aquí para el watch y el cálculo
-            res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : null;
-            res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : null;
-
-            pqrs.value = res; // Asignar primero para que fechaCreacion esté disponible
-
-            // Luego, si quieres pre-rellenar diasParaRespuesta al cargar:
-            if (pqrs.value.fechaLimiteRespuesta && pqrs.value.fechaCreacion) {
-              // Cálculo de diferencia de días solo en la PARTE ENTERA del día
-              // Para evitar problemas con horas, normalizamos ambas fechas al inicio del día
-              const fc = new Date(
-                pqrs.value.fechaCreacion.getFullYear(),
-                pqrs.value.fechaCreacion.getMonth(),
-                pqrs.value.fechaCreacion.getDate(),
-              );
-              const flr = new Date(
-                pqrs.value.fechaLimiteRespuesta.getFullYear(),
-                pqrs.value.fechaLimiteRespuesta.getMonth(),
-                pqrs.value.fechaLimiteRespuesta.getDate(),
-              );
-
-              const diffTime = flr.getTime() - fc.getTime(); // Diferencia en milisegundos
-              if (diffTime >= 0) {
-                // Solo si la fecha límite es igual o posterior
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // Redondear al día más cercano
-                diasParaRespuesta.value = diffDays;
-              } else {
-                diasParaRespuesta.value = null; // Fechas inconsistentes
-              }
-            } else {
-              diasParaRespuesta.value = null;
-            }
-
-            // ... manejo de adjuntos, etc. ...
-          } catch (error: any) {
-            // ...
-          }
-        };
-
-        // Manejo de archivos adjuntos (de tu código original)
         if (res.archivosAdjuntosDTO) {
-          existingFilesInfo.value = res.archivosAdjuntosDTO; // Asegúrate que 'existingFilesInfo' esté definido como ref
+          existingFilesInfo.value = res.archivosAdjuntosDTO;
         } else {
           existingFilesInfo.value = [];
         }
-        files.value = []; // Asegúrate que 'files' esté definido como ref
-
-        // Asignar el objeto PQRS
-        pqrs.value = res;
+        files.value = [];
       } catch (error: any) {
-        // Tu manejo de errores consistente
         if (error && error.response) {
           alertService.showHttpError(error.response);
         } else {
-          // Puedes personalizar este mensaje si lo deseas
-          alertService.showError(t$('ventanillaUnicaApp.pqrs.errors.retrieveError')); // Usando i18n
+          alertService.showError(t$('ventanillaUnicaApp.pqrs.errors.retrieveError'));
           console.error('Error retrieving PQRS data:', error);
         }
       }
     };
-
     const previousState = () => {
       filesToDelete.value = [];
       router.go(-1);
@@ -191,7 +166,6 @@ export default defineComponent({
         fileInput.value.value = '';
       }
     };
-
     const removeExistingFile = (index: number) => {
       if (existingFilesInfo.value && Array.isArray(existingFilesInfo.value) && existingFilesInfo.value[index]) {
         const fileToRemove = existingFilesInfo.value[index];
@@ -203,13 +177,11 @@ export default defineComponent({
         existingFilesInfo.value = existingFilesInfo.value.filter((_, currentIndex) => currentIndex !== index);
       }
     };
-
     const triggerFileInput = () => {
       if (fileInput.value) {
         fileInput.value.click();
       }
     };
-
     const onFileChange = (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target && target.files && target.files.length > 0) {
@@ -219,7 +191,6 @@ export default defineComponent({
         target.value = '';
       }
     };
-
     const uploadFiles = async () => {
       isUploading.value = true;
       errorMessage.value = null;
@@ -242,8 +213,7 @@ export default defineComponent({
         isUploading.value = false;
       }
     };
-
-    const downloadAttachedFile = async (fileURL: string | null | undefined, fileName: string | null | undefined) => {
+    const downloadAttachedFile = async (fileURL, fileName) => {
       if (!fileURL && !fileName) {
         return;
       }
@@ -263,7 +233,6 @@ export default defineComponent({
         alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
       }
     };
-
     const save = async (): Promise<void> => {
       try {
         if (isSaving.value) {
@@ -317,11 +286,10 @@ export default defineComponent({
           oficinas.value = res.data;
         });
     };
-
     initRelationships();
 
     const dataUtils = useDataUtils();
-    const { t: t$ } = useI18n();
+    const dateFormatService = useDateFormat({ entityRef: pqrs }); // Captura el servicio completo
     const validations = useValidation();
     const validationRules = {
       titulo: {
@@ -336,8 +304,7 @@ export default defineComponent({
       oficinaResponder: {},
     };
     const v$ = useVuelidate(validationRules, pqrs as any);
-    v$.value.$validate();
-
+    const { convertDateTimeFromServer } = dateFormatService;
     return {
       input,
       pqrsService,
@@ -367,8 +334,8 @@ export default defineComponent({
       t$,
       isUpdateMode,
       isAdmin,
-      listaEstadosPqrs,
-      diasParaRespuesta,
+      statesPqrs: statesPqrsRef,
+      daysForResponse,
       updateInstantField,
     };
   },
