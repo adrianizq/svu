@@ -59,7 +59,6 @@
                   readonly="isUpdateMode && isAdmin"
                   :class="{ valid: !v$.fechaCreacion.$invalid, invalid: v$.fechaCreacion.$invalid }"
                   :value="convertDateTimeFromServer(v$.fechaCreacion.$model)"
-                  @change="updateInstantField('fechaCreacion', $event)"
                 />
               </div>
               <div v-if="v$.fechaCreacion.$anyDirty && v$.fechaCreacion.$invalid">
@@ -97,7 +96,7 @@
                   readonly="isUpdateMode && isAdmin"
                   :class="{ valid: !v$.fechaLimiteRespuesta.$invalid, invalid: v$.fechaLimiteRespuesta.$invalid }"
                   :value="convertDateTimeFromServer(v$.fechaLimiteRespuesta.$model)"
-                  @change="updateInstantField('fechaLimiteRespuesta', $event)"
+                  @change="updateDueDate($event)"
                 />
               </div>
             </div>

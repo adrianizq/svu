@@ -5,8 +5,8 @@ export interface IPqrs {
   id?: string;
   titulo?: string;
   descripcion?: string;
-  fechaCreacion?: Date | undefined;
-  fechaLimiteRespuesta?: Date | null;
+  fechaCreacion?: Date | undefined | null;
+  fechaLimiteRespuesta?: Date | undefined | null;
   estado?: string;
   oficinaResponder?: IOficina | null;
   archivosAdjuntosDTO?: IArchivoAdjunto[] | null;
