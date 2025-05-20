@@ -55,7 +55,7 @@
               <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'estado'"></jhi-sort-indicator>
             </th>
             <th scope="row" @click="changeOrder('oficinaResponder.id')">
-              <span v-text="t$('ventanillaUnicaApp.pqrs.oficinaResponder.')"></span>
+              <span v-text="t$('ventanillaUnicaApp.pqrs.oficinaResponder')"></span>
               <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'oficinaResponder.id'"></jhi-sort-indicator>
             </th>
             <th scope="row"></th>
