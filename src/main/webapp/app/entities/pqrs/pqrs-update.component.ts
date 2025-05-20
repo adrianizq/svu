@@ -26,7 +26,7 @@ export default defineComponent({
     const archivoAdjuntoService = inject('archivoAdjuntoService', () => new ArchivoAdjuntoService());
     const accountService = inject<AccountService>('accountService');
     const oficinaService = inject('oficinaService', () => new OficinaService());
-    const { t: t$ } = useI18n(); // Definir t$ aquí
+    const { t: t$ } = useI18n();
 
     const files = ref<File[]>([]);
     const existingFilesInfo: Ref<IArchivoAdjunto[]> = ref([]);
@@ -72,9 +72,6 @@ export default defineComponent({
 
     onMounted(() => {
       checkAdmin();
-      if (!route.params?.pqrsId) {
-        // Promise.resolve().then(() => console.log('[DEBUG CREATE MODE onMounted - after tick] isAdmin final:', isAdmin.value));
-      }
     });
 
     const isUpdateMode = computed(() => {
@@ -106,8 +103,6 @@ export default defineComponent({
             const newDateLimit = new Date(dateCreationBase.getTime());
             newDateLimit.setDate(newDateLimit.getDate() + newDays);
             pqrs.value.fechaLimiteRespuesta = newDateLimit;
-          } else if (newDays === null && pqrs.value.fechaLimiteRespuesta !== undefined) {
-            // Si se borran los días
           }
         }
       },
@@ -289,7 +284,7 @@ export default defineComponent({
     initRelationships();
 
     const dataUtils = useDataUtils();
-    const dateFormatService = useDateFormat({ entityRef: pqrs }); // Captura el servicio completo
+    const dateFormatService = useDateFormat({ entityRef: pqrs });
     const validations = useValidation();
     const validationRules = {
       titulo: {
