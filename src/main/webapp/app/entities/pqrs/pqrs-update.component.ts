@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 
-import { statesPqrs } from '../../constants';
+import { StatesPqrs } from '../../constants';
 import PqrsService from './pqrs.service';
 import useDataUtils from '@/shared/data/data-utils.service';
 import { useDateFormat, useValidation } from '@/shared/composables';
@@ -48,7 +48,7 @@ export default defineComponent({
     const router = useRouter();
 
     const daysForResponse = ref<number | null>(null);
-    const statesPqrsRef = ref(statesPqrs);
+    const statesPqrsRef = ref(StatesPqrs);
 
     const isAdminReactive = ref<boolean | null>(null);
 
@@ -82,12 +82,12 @@ export default defineComponent({
       return idExists;
     });
 
-    const updateInstantField = (field: keyof IPqrs, event: Event) => {
+    const updateDueDate = (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target.value) {
-        pqrs.value[field] = new Date(target.value);
+        pqrs.value.fechaLimiteRespuesta = new Date(target.value);
       } else {
-        pqrs.value[field] = null;
+        pqrs.value.fechaLimiteRespuesta = null;
       }
     };
 
@@ -118,14 +118,14 @@ export default defineComponent({
       try {
         const res = await pqrsService().find(pqrsId);
 
-        res.dateCreation = res.dateCreation ? new Date(res.dateCreation) : null;
-        res.dateLimitResponse = res.dateLimitResponse ? new Date(res.dateLimitResponse) : null;
+        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : null;
+        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : null;
 
         pqrs.value = res;
 
-        if (pqrs.value.dateLimitResponse && pqrs.value.dateCreation) {
-          const fc = new Date(pqrs.value.dateCreation.getTime());
-          const flr = new Date(pqrs.value.dateLimitResponse.getTime());
+        if (pqrs.value.fechaLimiteRespuesta && pqrs.value.fechaCreacion) {
+          const fc = new Date(pqrs.value.fechaCreacion.getTime());
+          const flr = new Date(pqrs.value.fechaLimiteRespuesta.getTime());
           fc.setHours(0, 0, 0, 0);
           flr.setHours(0, 0, 0, 0);
           const diffTime = flr.getTime() - fc.getTime();
@@ -213,7 +213,7 @@ export default defineComponent({
         isUploading.value = false;
       }
     };
-    const downloadAttachedFile = async (fileURL, fileName) => {
+    const downloadAttachedFile = async (fileURL: string | undefined | null, fileName: string | undefined) => {
       if (!fileURL && !fileName) {
         return;
       }
@@ -336,7 +336,7 @@ export default defineComponent({
       isAdmin,
       statesPqrs: statesPqrsRef,
       daysForResponse,
-      updateInstantField,
+      updateDueDate,
     };
   },
 });
