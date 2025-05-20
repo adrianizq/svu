@@ -130,8 +130,8 @@
                 v-model="pqrs.oficinaResponder"
               >
                 <option
-                  :value="pqrs.oficinaResponder && oficinaOption.id === pqrs.oficinaResponder.id ? pqrs.oficinaResponder : oficinaOption"
                   v-for="oficinaOption in oficinas"
+                  :value="pqrs.oficinaResponder && oficinaOption.id === pqrs.oficinaResponder.id ? pqrs.oficinaResponder : oficinaOption"
                   :key="oficinaOption.id"
                 >
                   {{ oficinaOption.nombre }}
