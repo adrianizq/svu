@@ -177,7 +177,7 @@ public class PqrsService {
     public PqrsDTO create(PqrsDTO pqrsDTO) {
         LOG.debug("Request to create a Pqrs: {}", pqrsDTO);
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
-        pqrs.setEstado("pendiente");
+        pqrs.setEstado("PENDIENTE");
 
         Instant globalCurrentDate = Instant.now();
         pqrs.setFechaCreacion(globalCurrentDate);

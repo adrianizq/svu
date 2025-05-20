@@ -18,13 +18,13 @@
         "title": "Pqrs"
       },
       "id": "ID",
-      "titulo": "Titulo",
-      "descripcion": "Descripcion",
-      "fechaCreacion": "Fecha Creacion",
-      "fechaLimiteRespuesta": "Fecha Limite Respuesta",
-      "estado": "Estado",
-      "archivosAdjuntos": "Archivos Adjuntos",
-      "oficinaResponder": "Oficina Responder"
+      "titulo": "Title",
+      "descripcion": "Description",
+      "fechaCreacion": "Date Created",
+      "fechaLimiteRespuesta": "Deadline Response",
+      "estado": "Select a State",
+      "archivosAdjuntos": "Attachments",
+      "oficinaResponder": "Responsible Office"
     }
   }
 }

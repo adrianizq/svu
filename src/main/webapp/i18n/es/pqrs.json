@@ -21,10 +21,11 @@
       "titulo": "Titulo",
       "descripcion": "Descripcion",
       "fechaCreacion": "Fecha Creacion",
+      "daysForResponse": "Días para Respuesta",
       "fechaLimiteRespuesta": "Fecha Limite Respuesta",
-      "estado": "Estado",
+      "estado": "Seleciona un Estado",
       "archivosAdjuntos": "Archivos Adjuntos",
-      "oficinaResponder": "Oficina Responder"
+      "oficinaResponder": "Oficina Responsable"
     }
   }
 }

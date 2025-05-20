@@ -23,6 +23,7 @@
               :class="{ valid: !v$.titulo.$invalid, invalid: v$.titulo.$invalid }"
               v-model="v$.titulo.$model"
               required
+              :readonly="isUpdateMode && isAdmin"
             />
             <div v-if="v$.titulo.$anyDirty && v$.titulo.$invalid">
               <small class="form-text text-danger" v-for="error of v$.titulo.$errors" :key="error.$uid">{{ error.$message }}</small>
@@ -38,83 +39,106 @@
               :class="{ valid: !v$.descripcion.$invalid, invalid: v$.descripcion.$invalid }"
               v-model="v$.descripcion.$model"
               required
+              :readonly="isUpdateMode && isAdmin"
             ></textarea>
             <div v-if="v$.descripcion.$anyDirty && v$.descripcion.$invalid">
               <small class="form-text text-danger" v-for="error of v$.descripcion.$errors" :key="error.$uid">{{ error.$message }}</small>
             </div>
           </div>
           <!--  -->
-          <div class="form-group">
-            <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.fechaCreacion')" for="pqrs-fechaCreacion"></label>
-            <div class="d-flex">
+          <template v-if="isUpdateMode && isAdmin">
+            <div class="form-group">
+              <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.fechaCreacion')" for="pqrs-fechaCreacion"></label>
+              <div class="d-flex">
+                <input
+                  id="pqrs-fechaCreacion"
+                  data-cy="fechaCreacion"
+                  type="datetime-local"
+                  class="form-control"
+                  name="fechaCreacion"
+                  readonly="isUpdateMode && isAdmin"
+                  :class="{ valid: !v$.fechaCreacion.$invalid, invalid: v$.fechaCreacion.$invalid }"
+                  :value="convertDateTimeFromServer(v$.fechaCreacion.$model)"
+                />
+              </div>
+              <div v-if="v$.fechaCreacion.$anyDirty && v$.fechaCreacion.$invalid">
+                <small class="form-text text-danger" v-for="error of v$.fechaCreacion.$errors" :key="error.$uid">{{
+                  error.$message
+                }}</small>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.daysForResponse')" for="pqrs-daysForResponse"></label>
               <input
-                id="pqrs-fechaCreacion"
-                data-cy="fechaCreacion"
-                type="datetime-local"
+                type="number"
                 class="form-control"
-                name="fechaCreacion"
-                :class="{ valid: !v$.fechaCreacion.$invalid, invalid: v$.fechaCreacion.$invalid }"
-                :value="convertDateTimeFromServer(v$.fechaCreacion.$model)"
-                @change="updateInstantField('fechaCreacion', $event)"
+                name="daysForResponse"
+                id="pqrs-daysForResponse"
+                data-cy="daysForResponse"
+                v-model.number="daysForResponse"
+                min="0"
+                placeholder="15"
               />
             </div>
-            <div v-if="v$.fechaCreacion.$anyDirty && v$.fechaCreacion.$invalid">
-              <small class="form-text text-danger" v-for="error of v$.fechaCreacion.$errors" :key="error.$uid">{{ error.$message }}</small>
+            <div class="form-group">
+              <label
+                class="form-control-label"
+                v-text="t$('ventanillaUnicaApp.pqrs.fechaLimiteRespuesta')"
+                for="pqrs-fechaLimiteRespuesta"
+              ></label>
+              <div class="d-flex">
+                <input
+                  id="pqrs-fechaLimiteRespuesta"
+                  data-cy="fechaLimiteRespuesta"
+                  type="datetime-local"
+                  class="form-control"
+                  name="fechaLimiteRespuesta"
+                  readonly="isUpdateMode && isAdmin"
+                  :class="{ valid: !v$.fechaLimiteRespuesta.$invalid, invalid: v$.fechaLimiteRespuesta.$invalid }"
+                  :value="convertDateTimeFromServer(v$.fechaLimiteRespuesta.$model)"
+                  @change="updateDueDate($event)"
+                />
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label
-              class="form-control-label"
-              v-text="t$('ventanillaUnicaApp.pqrs.fechaLimiteRespuesta')"
-              for="pqrs-fechaLimiteRespuesta"
-            ></label>
-            <div class="d-flex">
-              <input
-                id="pqrs-fechaLimiteRespuesta"
-                data-cy="fechaLimiteRespuesta"
-                type="datetime-local"
+            <!--  -->
+            <div class="form-group">
+              <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.estado')" for="pqrs-estado"></label>
+              <select
                 class="form-control"
-                name="fechaLimiteRespuesta"
-                :class="{ valid: !v$.fechaLimiteRespuesta.$invalid, invalid: v$.fechaLimiteRespuesta.$invalid }"
-                :value="convertDateTimeFromServer(v$.fechaLimiteRespuesta.$model)"
-                @change="updateInstantField('fechaLimiteRespuesta', $event)"
-              />
-            </div>
-          </div>
-          <!--  -->
-          <div class="form-group">
-            <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.estado')" for="pqrs-estado"></label>
-            <input
-              type="text"
-              class="form-control"
-              name="estado"
-              id="pqrs-estado"
-              data-cy="estado"
-              :class="{ valid: !v$.estado.$invalid, invalid: v$.estado.$invalid }"
-              v-model="v$.estado.$model"
-            />
-            <div v-if="v$.estado.$anyDirty && v$.estado.$invalid">
-              <small class="form-text text-danger" v-for="error of v$.estado.$errors" :key="error.$uid">{{ error.$message }}</small>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.oficinaResponder')" for="pqrs-oficinaResponder"></label>
-            <select
-              class="form-control"
-              id="pqrs-oficinaResponder"
-              data-cy="oficinaResponder"
-              name="oficinaResponder"
-              v-model="pqrs.oficinaResponder"
-            >
-              <option
-                :value="pqrs.oficinaResponder && oficinaOption.id === pqrs.oficinaResponder.id ? pqrs.oficinaResponder : oficinaOption"
-                v-for="oficinaOption in oficinas"
-                :key="oficinaOption.id"
+                name="estado"
+                id="pqrs-estado"
+                data-cy="estado"
+                :class="{ valid: !v$.estado.$invalid, invalid: v$.estado.$invalid }"
+                v-model="v$.estado.$model"
               >
-                {{ oficinaOption.nombre }}
-              </option>
-            </select>
-          </div>
+                <option v-for="(enumValue, enumKey) in statesPqrs" :key="enumKey" :value="enumValue">
+                  {{ enumValue }}
+                </option>
+              </select>
+              <div v-if="v$.estado.$anyDirty && v$.estado.$invalid">
+                <small class="form-text text-danger" v-for="error of v$.estado.$errors" :key="error.$uid">{{ error.$message }}</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.oficinaResponder')" for="pqrs-oficinaResponder"></label>
+              <select
+                class="form-control"
+                id="pqrs-oficinaResponder"
+                data-cy="oficinaResponder"
+                name="oficinaResponder"
+                v-model="pqrs.oficinaResponder"
+              >
+                <option
+                  v-for="oficinaOption in oficinas"
+                  :value="pqrs.oficinaResponder && oficinaOption.id === pqrs.oficinaResponder.id ? pqrs.oficinaResponder : oficinaOption"
+                  :key="oficinaOption.id"
+                >
+                  {{ oficinaOption.nombre }}
+                </option>
+              </select>
+            </div>
+          </template>
         </div>
         <div>
           <div>

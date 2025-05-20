@@ -1,8 +1,9 @@
-import { type Ref, computed, defineComponent, inject, ref, onUnmounted } from 'vue';
+import { computed, defineComponent, inject, ref, onUnmounted, watch, type Ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 
+import { StatesPqrs } from '../../constants';
 import PqrsService from './pqrs.service';
 import useDataUtils from '@/shared/data/data-utils.service';
 import { useDateFormat, useValidation } from '@/shared/composables';
@@ -14,6 +15,7 @@ import { type IPqrs, Pqrs } from '@/shared/model/pqrs.model';
 
 import ArchivoAdjuntoService from '@/entities/archivo-adjunto/archivo-adjunto.service';
 import { type IArchivoAdjunto } from '@/shared/model/archivo-adjunto.model';
+import type AccountService from '@/account/account.service';
 
 export default defineComponent({
   compatConfig: { MODE: 3 },
@@ -22,7 +24,9 @@ export default defineComponent({
     const pqrsService = inject('pqrsService', () => new PqrsService());
     const alertService = inject('alertService', () => useAlertService(), true);
     const archivoAdjuntoService = inject('archivoAdjuntoService', () => new ArchivoAdjuntoService());
+    const accountService = inject<AccountService>('accountService');
     const oficinaService = inject('oficinaService', () => new OficinaService());
+    const { t: t$ } = useI18n();
 
     const files = ref<File[]>([]);
     const existingFilesInfo: Ref<IArchivoAdjunto[]> = ref([]);
@@ -43,6 +47,108 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
 
+    const daysForResponse = ref<number | null>(null);
+    const statesPqrsRef = ref(StatesPqrs);
+
+    const isAdminReactive = ref<boolean | null>(null);
+
+    const checkAdmin = async () => {
+      if (accountService) {
+        try {
+          const esAdminResultado = await accountService.hasAnyAuthorityAndCheckAuth('ROLE_ADMIN');
+          isAdminReactive.value = esAdminResultado;
+        } catch (error) {
+          console.error('Error al verificar el estado de admin:', error);
+          isAdminReactive.value = false;
+        }
+      } else {
+        isAdminReactive.value = false;
+      }
+    };
+
+    const isAdmin = computed(() => {
+      return !!isAdminReactive.value;
+    });
+
+    onMounted(() => {
+      checkAdmin();
+    });
+
+    const isUpdateMode = computed(() => {
+      const idExists = !!pqrs.value.id;
+      return idExists;
+    });
+
+    const updateDueDate = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.value) {
+        pqrs.value.fechaLimiteRespuesta = new Date(target.value);
+      } else {
+        pqrs.value.fechaLimiteRespuesta = null;
+      }
+    };
+
+    watch(
+      [daysForResponse, () => pqrs.value.fechaCreacion],
+      ([newDays, newdateCreationObj]) => {
+        if (isUpdateMode.value && isAdmin.value) {
+          let dateCreationBase: Date | null = null;
+          if (newdateCreationObj instanceof Date) {
+            dateCreationBase = newdateCreationObj;
+          } else if (typeof newdateCreationObj === 'string' && newdateCreationObj) {
+            dateCreationBase = new Date(newdateCreationObj);
+          }
+
+          if (newDays !== null && typeof newDays === 'number' && newDays >= 0 && dateCreationBase && !isNaN(dateCreationBase.getTime())) {
+            const newDateLimit = new Date(dateCreationBase.getTime());
+            newDateLimit.setDate(newDateLimit.getDate() + newDays);
+            pqrs.value.fechaLimiteRespuesta = newDateLimit;
+          }
+        }
+      },
+      { deep: false },
+    );
+
+    const retrievePqrs = async (pqrsId: string) => {
+      try {
+        const res = await pqrsService().find(pqrsId);
+
+        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : null;
+        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : null;
+
+        pqrs.value = res;
+
+        if (pqrs.value.fechaLimiteRespuesta && pqrs.value.fechaCreacion) {
+          const fc = new Date(pqrs.value.fechaCreacion.getTime());
+          const flr = new Date(pqrs.value.fechaLimiteRespuesta.getTime());
+          fc.setHours(0, 0, 0, 0);
+          flr.setHours(0, 0, 0, 0);
+          const diffTime = flr.getTime() - fc.getTime();
+          if (diffTime >= 0) {
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            daysForResponse.value = diffDays;
+          } else {
+            daysForResponse.value = null;
+          }
+        } else {
+          daysForResponse.value = null;
+        }
+
+        if (res.archivosAdjuntosDTO) {
+          existingFilesInfo.value = res.archivosAdjuntosDTO;
+        } else {
+          existingFilesInfo.value = [];
+        }
+        files.value = [];
+      } catch (error: any) {
+        if (error && error.response) {
+          alertService.showHttpError(error.response);
+        } else {
+          alertService.showError(t$('ventanillaUnicaApp.pqrs.errors.retrieveError'));
+          console.error('Error retrieving PQRS data:', error);
+        }
+      }
+    };
     const previousState = () => {
       filesToDelete.value = [];
       router.go(-1);
@@ -55,7 +161,6 @@ export default defineComponent({
         fileInput.value.value = '';
       }
     };
-
     const removeExistingFile = (index: number) => {
       if (existingFilesInfo.value && Array.isArray(existingFilesInfo.value) && existingFilesInfo.value[index]) {
         const fileToRemove = existingFilesInfo.value[index];
@@ -67,13 +172,11 @@ export default defineComponent({
         existingFilesInfo.value = existingFilesInfo.value.filter((_, currentIndex) => currentIndex !== index);
       }
     };
-
     const triggerFileInput = () => {
       if (fileInput.value) {
         fileInput.value.click();
       }
     };
-
     const onFileChange = (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target && target.files && target.files.length > 0) {
@@ -83,7 +186,6 @@ export default defineComponent({
         target.value = '';
       }
     };
-
     const uploadFiles = async () => {
       isUploading.value = true;
       errorMessage.value = null;
@@ -106,31 +208,7 @@ export default defineComponent({
         isUploading.value = false;
       }
     };
-
-    const retrievePqrs = async (pqrsId: string) => {
-      try {
-        const res = await pqrsService().find(pqrsId);
-        res.fechaCreacion = res.fechaCreacion ? new Date(res.fechaCreacion) : undefined;
-        res.fechaLimiteRespuesta = res.fechaLimiteRespuesta ? new Date(res.fechaLimiteRespuesta) : undefined;
-
-        if (res.archivosAdjuntosDTO) {
-          existingFilesInfo.value = res.archivosAdjuntosDTO;
-        } else {
-          existingFilesInfo.value = [];
-        }
-
-        files.value = [];
-        pqrs.value = res;
-      } catch (error: any) {
-        if (error && error.response) {
-          alertService.showHttpError(error.response);
-        } else {
-          alertService.showHttpError('An unexpected error ocurred while retrieving PQRS data');
-        }
-      }
-    };
-
-    const downloadAttachedFile = async (fileURL: string | null | undefined, fileName: string | null | undefined) => {
+    const downloadAttachedFile = async (fileURL: string | undefined | null, fileName: string | undefined) => {
       if (!fileURL && !fileName) {
         return;
       }
@@ -150,7 +228,6 @@ export default defineComponent({
         alertService.showHttpError(error.response ?? 'Ocurrió un error inesperado.');
       }
     };
-
     const save = async (): Promise<void> => {
       try {
         if (isSaving.value) {
@@ -204,11 +281,10 @@ export default defineComponent({
           oficinas.value = res.data;
         });
     };
-
     initRelationships();
 
     const dataUtils = useDataUtils();
-    const { t: t$ } = useI18n();
+    const dateFormatService = useDateFormat({ entityRef: pqrs });
     const validations = useValidation();
     const validationRules = {
       titulo: {
@@ -223,8 +299,7 @@ export default defineComponent({
       oficinaResponder: {},
     };
     const v$ = useVuelidate(validationRules, pqrs as any);
-    v$.value.$validate();
-
+    const { convertDateTimeFromServer } = dateFormatService;
     return {
       input,
       pqrsService,
@@ -252,6 +327,11 @@ export default defineComponent({
       v$,
       ...useDateFormat({ entityRef: pqrs }),
       t$,
+      isUpdateMode,
+      isAdmin,
+      statesPqrs: statesPqrsRef,
+      daysForResponse,
+      updateDueDate,
     };
   },
 });
