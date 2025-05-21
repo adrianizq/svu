@@ -8,4 +8,5 @@ export enum StatesPqrs {
   InProcess = 'EN PROCESO',
   Resolved = 'RESUELTA',
   Closed = 'CERRADA',
+  Rejected = 'RECHAZADA',
 }
