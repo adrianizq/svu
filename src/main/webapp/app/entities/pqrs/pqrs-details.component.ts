@@ -2,7 +2,7 @@ import { type Ref, defineComponent, inject, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
-import { StatesPqrs } from '../../constants';
+import { StatesPqrs } from '@/constants';
 import PqrsService from './pqrs.service';
 import useDataUtils from '@/shared/data/data-utils.service';
 import { useDateFormat } from '@/shared/composables';
@@ -27,11 +27,11 @@ export default defineComponent({
     const previousState = () => router.go(-1);
     const pqrs: Ref<IPqrs> = ref({});
 
-    const retrievePqrs = async pqrsId => {
+    const retrievePqrs = async (pqrsId: string | string[]) => {
       try {
         const res = await pqrsService().find(pqrsId);
         pqrs.value = res;
-      } catch (error) {
+      } catch (error: any) {
         alertService.showHttpError(error.response);
       }
     };
@@ -58,20 +58,20 @@ export default defineComponent({
           const result = await pqrsService().update(pqrsToUpdate);
           pqrs.value = result;
           alertService.showSuccess(t(successMessageKey));
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error al cambiar estado de PQRS:', error);
           const errorMessageKey = 'ventanillaUnicaApp.pqrs.messages.resolvedSuccess';
           if (error.response) {
             alertService.showHttpError(error.response);
           } else {
-            alertService.showError(t(resolvedError));
+            alertService.showError(t('ventanillaUnicaApp.pqrs.messages.resolvedError'));
           }
         }
       }
     };
 
     onMounted(async () => {
-      const pqrsId = route.params.pqrsId;
+      const pqrsId: string | string[] = route.params.pqrsId;
       if (pqrsId) {
         await retrievePqrs(pqrsId);
       }

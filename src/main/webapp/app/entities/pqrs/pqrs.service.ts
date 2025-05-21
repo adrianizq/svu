@@ -7,7 +7,7 @@ import { type IPqrs } from '@/shared/model/pqrs.model';
 const baseApiUrl = 'api/pqrs';
 
 export default class PqrsService {
-  public find(id: string): Promise<IPqrs> {
+  public find(id: string | string[]): Promise<IPqrs> {
     return new Promise<IPqrs>((resolve, reject) => {
       axios
         .get(`${baseApiUrl}/${id}`)
