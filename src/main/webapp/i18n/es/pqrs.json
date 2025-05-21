@@ -25,7 +25,17 @@
       "fechaLimiteRespuesta": "Fecha Limite Respuesta",
       "estado": "Seleciona un Estado",
       "archivosAdjuntos": "Archivos Adjuntos",
-      "oficinaResponder": "Oficina Responsable"
+      "oficinaResponder": "Oficina Responsable",
+      "action": {
+        "resolve": "Marcar como Resuelta",
+        "inProgres": "En Proceso"
+      },
+      "messages": {
+        "resolvedSuccess": "Estado de PQRS cambio a \"RESUELTA\".",
+        "resolvedError": "Error al marcar la PQRS como resuelta.",
+        "notFound": "PQRS no encontrada.",
+        "inProgresSuccess": "Estado de PQRS cambio a \"EN PROCESO\"."
+      }
     }
   }
 }
