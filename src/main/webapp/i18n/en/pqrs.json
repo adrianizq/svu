@@ -24,7 +24,17 @@
       "fechaLimiteRespuesta": "Deadline Response",
       "estado": "Select a State",
       "archivosAdjuntos": "Attachments",
-      "oficinaResponder": "Responsible Office"
+      "oficinaResponder": "Responsible Office",
+      "action": {
+        "resolve": "Mark as Solved",
+        "inProgres": "In Process"
+      },
+      "messages": {
+        "resolvedSuccess": "PQRS marked as successfully resolved.",
+        "resolvedError": "Error when marking the PQRS as resolved.",
+        "notFound": "PQRS not found.",
+        "inProgresSuccess": "PQRS marked as In Process successfully."
+      }
     }
   }
 }
