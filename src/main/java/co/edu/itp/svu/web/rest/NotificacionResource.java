@@ -28,7 +28,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link co.edu.itp.svu.domain.Notificacion}.
  */
 @RestController
-@RequestMapping("/api/notificacions")
+@RequestMapping("/api/notifications")
 public class NotificacionResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificacionResource.class);
