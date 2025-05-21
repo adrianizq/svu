@@ -42,7 +42,7 @@
           <dd>
             <div v-if="pqrs.oficinaResponder">
               <router-link :to="{ name: 'OficinaView', params: { oficinaId: pqrs.oficinaResponder.id } }">{{
-                pqrs.oficinaResponder.id
+                pqrs.oficinaResponder.nombre || pqrs.oficinaResponder.id
               }}</router-link>
             </div>
           </dd>
@@ -56,6 +56,20 @@
             <font-awesome-icon icon="pencil-alt"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.edit')"></span>
           </button>
         </router-link>
+
+        <button
+          v-if="pqrs.id"
+          @click="toggleEstadoPqrs()"
+          :class="['btn', pqrs.estado === StatesPqrs.Resolved ? 'btn-warning' : 'btn-success', 'ms-2']"
+          data-cy="toggleStatusButton"
+        >
+          <font-awesome-icon :icon="pqrs.estado === StatesPqrs.Resolved ? 'undo-alt' : 'check-circle'"></font-awesome-icon>
+          <span v-if="pqrs.estado === StatesPqrs.Resolved" v-text="t('ventanillaUnicaApp.pqrs.action.inProgres')"></span>
+          <span v-else v-text="t('ventanillaUnicaApp.pqrs.action.resolve')"></span>
+        </button>
+        <div v-else>
+          <p v-text="t('global.messages.info.loading')"></p>
+        </div>
       </div>
     </div>
   </div>
