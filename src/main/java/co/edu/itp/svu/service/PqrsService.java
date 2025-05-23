@@ -86,7 +86,7 @@ public class PqrsService {
      */
     public Page<PqrsDTO> findAll(String state, String idOffice, LocalDate date, Pageable pageable) {
         LOG.debug("Request to get all Pqrs");
-        String closedState = "closed";
+        String closedState = "CERRADA";
         boolean isIdOfficeProvided = idOffice != null && !idOffice.trim().isEmpty();
 
         if (closedState.equals(state) && !isIdOfficeProvided) {
