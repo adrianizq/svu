@@ -58,7 +58,7 @@
         </router-link>
 
         <button
-          v-if="pqrs.id"
+          v-if="isFuncionario && pqrs.id && pqrs.estado !== StatesPqrs.Closed"
           @click="toggleEstadoPqrs()"
           :class="['btn', pqrs.estado === StatesPqrs.Resolved ? 'btn-warning' : 'btn-success', 'ms-2']"
           data-cy="toggleStatusButton"
@@ -67,9 +67,30 @@
           <span v-if="pqrs.estado === StatesPqrs.Resolved" v-text="t('ventanillaUnicaApp.pqrs.action.inProgres')"></span>
           <span v-else v-text="t('ventanillaUnicaApp.pqrs.action.resolve')"></span>
         </button>
-        <div v-else>
-          <p v-text="t('global.messages.info.loading')"></p>
-        </div>
+
+        <button
+          v-if="pqrs.id && pqrs.estado !== StatesPqrs.Closed && isAdmin"
+          @click="openConfirmCloseModal"
+          class="btn btn-danger ms-2"
+          data-cy="closePqrsButton"
+        >
+          <font-awesome-icon icon="times-circle"></font-awesome-icon>
+          <span v-text="t('ventanillaUnicaApp.pqrs.action.closePqrs')"></span>
+        </button>
+        <b-modal
+          id="confirmClosePqrsModal"
+          ref="confirmCloseModalRef"
+          v-model="isConfirmCloseModalVisible"
+          :title="t('ventanillaUnicaApp.pqrs.messages.confirmClosePqrs')"
+          @ok="handleConfirmClose"
+          :ok-title="t('entity.action.confirm')"
+          ok-variant="danger"
+          :cancel-title="t('entity.action.cancel')"
+          cancel-variant="secondary"
+          centered
+        >
+          <p v-text="t('ventanillaUnicaApp.pqrs.messages.messageClosePqrs')"></p>
+        </b-modal>
       </div>
     </div>
   </div>
