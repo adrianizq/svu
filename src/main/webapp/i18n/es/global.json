@@ -60,7 +60,8 @@
         "register": {
           "noaccount": "¿Aún no tienes una cuenta?",
           "link": "Crea una cuenta"
-        }
+        },
+        "loading": "Cargando"
       },
       "error": {
         "dontmatch": "¡La contraseña y la confirmación de contraseña no coinciden!"
@@ -99,6 +100,7 @@
       "addimage": "Añadir imagen",
       "back": "Volver",
       "cancel": "Cancelar",
+      "confirm": "Confimar",
       "delete": "Eliminar",
       "edit": "Editar",
       "open": "Abrir",
