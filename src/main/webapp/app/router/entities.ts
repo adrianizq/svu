@@ -61,7 +61,7 @@ export default {
       path: 'pqrs',
       name: 'Pqrs',
       component: Pqrs,
-      meta: { authorities: [Authority.USER] },
+      meta: { authorities: [Authority.FUNCTIONARY, Authority.ADMIN] },
     },
     {
       path: 'pqrs/new',
@@ -79,7 +79,7 @@ export default {
       path: 'pqrs/:pqrsId/view',
       name: 'PqrsView',
       component: PqrsDetails,
-      meta: { authorities: [Authority.USER] },
+      meta: { authorities: [Authority.FUNCTIONARY, Authority.ADMIN] },
     },
     {
       path: 'respuesta',
