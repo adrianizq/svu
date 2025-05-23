@@ -28,13 +28,16 @@
       "oficinaResponder": "Oficina Responsable",
       "action": {
         "resolve": "Marcar como Resuelta",
-        "inProgres": "En Proceso"
+        "inProgres": "En Proceso",
+        "closePqrs": "CERRAR PQRS"
       },
       "messages": {
         "resolvedSuccess": "Estado de PQRS cambio a \"RESUELTA\".",
         "resolvedError": "Error al marcar la PQRS como resuelta.",
         "notFound": "PQRS no encontrada.",
-        "inProgresSuccess": "Estado de PQRS cambio a \"EN PROCESO\"."
+        "inProgresSuccess": "Estado de PQRS cambio a \"EN PROCESO\".",
+        "messageClosePqrs": "Esta seguro de cerrar la PQRS",
+        "confirmClosePqrs": "Mensaje de Confirmación"
       }
     }
   }

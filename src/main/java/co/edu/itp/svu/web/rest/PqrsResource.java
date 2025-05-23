@@ -89,7 +89,7 @@ public class PqrsResource {
      */
     @GetMapping("")
     public ResponseEntity<List<PqrsDTO>> getAllPqrs(
-        @RequestParam(defaultValue = "closed", required = false) String state,
+        @RequestParam(defaultValue = "CERRADA", required = false) String state,
         @RequestParam(required = false) String idOffice,
         @RequestParam(name = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable

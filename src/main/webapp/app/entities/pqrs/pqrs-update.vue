@@ -110,6 +110,7 @@
                 data-cy="estado"
                 :class="{ valid: !v$.estado.$invalid, invalid: v$.estado.$invalid }"
                 v-model="v$.estado.$model"
+                :disabled="pqrs.estado === statesPqrs.Closed"
               >
                 <option v-for="(enumValue, enumKey) in statesPqrs" :key="enumKey" :value="enumValue">
                   {{ enumValue }}
