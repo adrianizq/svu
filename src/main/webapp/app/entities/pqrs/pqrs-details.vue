@@ -28,7 +28,9 @@
             <span v-text="t$('ventanillaUnicaApp.pqrs.fechaLimiteRespuesta')"></span>
           </dt>
           <dd>
-            <span v-if="pqrs.fechaLimiteRespuesta">{{ formatDateLong(pqrs.fechaLimiteRespuesta) }}</span>
+            <b-badge variant="warning" class="fw-bold pqrs-button" v-if="pqrs.fechaLimiteRespuesta" pill>
+              <strong>{{ formatDateLong(pqrs.fechaLimiteRespuesta) }}</strong>
+            </b-badge>
           </dd>
           <dt>
             <span v-text="t$('ventanillaUnicaApp.pqrs.estado')"></span>
@@ -76,3 +78,13 @@
 </template>
 
 <script lang="ts" src="./pqrs-details.component.ts"></script>
+<style scoped lang="scss">
+.pqrs-button {
+  cursor: default;
+  font-size: 18px;
+}
+
+.pqrs-button:not(:disabled):not(.disabled) {
+  cursor: default;
+}
+</style>
